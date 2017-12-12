@@ -1,3 +1,4 @@
+import os
 from PIL import ImageGrab
 import win32gui
 
@@ -8,7 +9,7 @@ win32gui.EnumWindows(enum_cb, toplist)
 
 print(winlist)
 
-firefox = [(hwnd, title) for hwnd, title in winlist if 'notepad++' in title.lower()]
+firefox = [(hwnd, title) for hwnd, title in winlist if 'chrome' in title.lower()]
 # just grab the hwnd for first window matching firefox
 firefox = firefox[0]
 hwnd = firefox[0]
@@ -18,4 +19,8 @@ bbox = win32gui.GetWindowRect(hwnd)
 
 print(bbox)
 img = ImageGrab.grab(bbox)
-img.show()
+# img.show()
+
+this_dir = os.path.dirname(__file__)
+ss_path = os.path.join(this_dir, "screenshot.png")
+img.save(ss_path)

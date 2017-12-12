@@ -23,13 +23,17 @@ args = vars(ap.parse_args())
 # load the image, convert it to grayscale, and blur it slightly
 image = cv2.imread(args["image"])
 gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-gray = cv2.GaussianBlur(gray, (7, 7), 0)
+#gray = cv2.GaussianBlur(gray, (7, 7), 0)
+#blur = cv2.GaussianBlur(gray,(1,1),1000)
+blur = gray
+flag, thresh = cv2.threshold(blur, 120, 255, cv2.THRESH_BINARY)
 
 # perform edge detection, then perform a dilation + erosion to
 # close gaps in between object edges
-edged = cv2.Canny(gray, 50, 100)
-edged = cv2.dilate(edged, None, iterations=1)
-edged = cv2.erode(edged, None, iterations=1)
+#edged = cv2.Canny(thresh, 50, 100)
+#edged = cv2.dilate(edged, None, iterations=1)
+#edged = cv2.erode(edged, None, iterations=1)
+edged = thresh
 
 # find contours in the edge map
 cnts = cv2.findContours(edged.copy(), cv2.RETR_EXTERNAL,

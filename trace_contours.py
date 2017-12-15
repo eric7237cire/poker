@@ -4,53 +4,55 @@ from imutils import perspective
 from imutils import contours
 import numpy as np
 import argparse
+import shutil
 import imutils
 import cv2
 import sys
 import os
 
+IMAGES_PATH = os.path.join(os.path.dirname(__file__), 'images')
 
 def midpoint(ptA, ptB):
     return ((ptA[0] + ptB[0]) * 0.5, (ptA[1] + ptB[1]) * 0.5)
 
+#cv2.fillPoly( np.zeros(p_orig_image.shape, dtype=np.uint8), np.array([[[0,353], [0,382], [6, 382], [6, 353]]]), color = [255,255,255])[0:6, 353:382]
 
-def clip_and_save(p_orig_image, contour_to_crop, file_name):
-    images_path = os.path.join(os.path.dirname(__file__), 'images')
+#cv2.fillPoly( np.zeros( (7, 7, 3), dtype=np.uint8), np.array([[[0,3], [0,5], [6, 5], [6, 3]]]), color = [255,255,255])[6]
 
-    os.makedirs(images_path, exist_ok=True)
+def clip_and_save(p_orig_image, x,y,w,h, file_name):
+    """
 
-    mask = np.zeros(p_orig_image.shape, dtype=np.uint8)
+    :param p_orig_image:  cv2 image with dimensions [y][x][RGB] = 0-255
+    :param contour_to_crop:
+    :param file_name:
+    :return:
+    """
 
-    channel_count = p_orig_image.shape[2]  # i.e. 3 or 4 depending on your image
-    ignore_mask_color = (255,) * channel_count
+    os.makedirs(IMAGES_PATH, exist_ok=True)
 
-    polygon_to_crop = np.squeeze(contour_to_crop)
-    polygon_list_to_crop = np.expand_dims(polygon_to_crop, axis=0)
 
-    cv2.fillPoly(mask, polygon_list_to_crop, ignore_mask_color)
-    # from Masterfool: use cv2.fillConvexPoly if you know it's convex
-
-    # apply the mask
-    masked_image = cv2.bitwise_and(p_orig_image, mask)
-
-    # now crop
-    max_dims = np.amax(polygon_to_crop, axis=0)
-    min_dims = np.amin(polygon_to_crop, axis=0)
-
-    crop_img = masked_image[ min_dims[0]:max_dims[0], 1+min_dims[1]:1+max_dims[1] ]  # Crop from x, y, w, h -> 100, 200, 300, 400
+    crop_img = p_orig_image[ y:y+h+1, x:x+w+1]
 
     # save the result
-    cv2.imwrite(os.path.join(images_path, file_name), crop_img)
+    cv2.imwrite(os.path.join(IMAGES_PATH, file_name), crop_img)
+
+
 
 def main():
-    sys.argv.extend(['-i', 'screenshot.png', '-w', '50'])
+
+    try:
+        shutil.rmtree(IMAGES_PATH, ignore_errors=True)
+        os.makedirs(IMAGES_PATH)
+    except Exception as ex:
+        print(ex)
+
+    sys.argv.extend(['-i', 'screenshot.png', ])
 
     # construct the argument parse and parse the arguments
     ap = argparse.ArgumentParser()
     ap.add_argument("-i", "--image", required=True,
                     help="path to the input image")
-    ap.add_argument("-w", "--width", type=float, required=True,
-                    help="width of the left-most object in the image (in inches)")
+
     args = vars(ap.parse_args())
 
     # load the image, convert it to grayscale, and blur it slightly
@@ -59,7 +61,7 @@ def main():
     # gray = cv2.GaussianBlur(gray, (7, 7), 0)
     # blur = cv2.GaussianBlur(gray,(1,1),1000)
     blur = gray
-    flag, thresh = cv2.threshold(blur, 120, 255, cv2.THRESH_BINARY)
+    flag, thresh = cv2.threshold(blur, 200, 255, cv2.THRESH_BINARY)
 
     # perform edge detection, then perform a dilation + erosion to
     # close gaps in between object edges
@@ -76,24 +78,36 @@ def main():
     # sort the contours from left-to-right and initialize the
     # 'pixels per metric' calibration variable
     (cnts, _) = contours.sort_contours(cnts)
-    pixelsPerMetric = None
+
 
     orig = image.copy()
 
     # loop over the contours individually
-    for idx, c in enumerate(cnts):
+    for idx, contour in enumerate(cnts):
         # if the contour is not sufficiently large, ignore it
-        if cv2.contourArea(c) < 10:
+        if cv2.contourArea(contour) < 10:
+            continue
+
+        x, y, w, h = cv2.boundingRect(contour)
+
+
+        if w < 25 or w > 50:
+            continue
+
+        if h < 30 or h > 70:
             continue
 
         clip_and_save(
             p_orig_image=orig,
-            contour_to_crop=c,
+            x=x,
+            y=y,
+            w=w,
+            h=h,
             file_name=f"sub_image_{idx:04}.png"
         )
         # compute the rotated bounding box of the contour
 
-        box = cv2.minAreaRect(c)
+        box = cv2.minAreaRect(contour)
         box = cv2.cv.BoxPoints(box) if imutils.is_cv2() else cv2.boxPoints(box)
         box = np.array(box, dtype="int")
 
@@ -136,28 +150,14 @@ def main():
         dA = dist.euclidean((tltrX, tltrY), (blbrX, blbrY))
         dB = dist.euclidean((tlblX, tlblY), (trbrX, trbrY))
 
-        # if the pixels per metric has not been initialized, then
-        # compute it as the ratio of pixels to supplied metric
-        # (in this case, inches)
-        if pixelsPerMetric is None:
-            pixelsPerMetric = dB / args["width"]
 
-        # compute the size of the object
-        dimA = dA / pixelsPerMetric
-        dimB = dB / pixelsPerMetric
 
-        # draw the object sizes on the image
-        if False:
-            cv2.putText(orig, "{:.1f}in".format(dimA),
-                        (int(tltrX - 15), int(tltrY - 10)), cv2.FONT_HERSHEY_SIMPLEX,
-                        0.65, (255, 255, 255), 2)
-            cv2.putText(orig, "{:.1f}in".format(dimB),
-                        (int(trbrX + 10), int(trbrY)), cv2.FONT_HERSHEY_SIMPLEX,
-                        0.65, (255, 255, 255), 2)
+
 
     # show the output image
+    #cv2.imshow("Image", thresh)
     cv2.imshow("Image", orig)
-    #cv2.waitKey(0)
+    cv2.waitKey(0)
 
 
 if __name__ == '__main__':

@@ -7,3 +7,7 @@ class Config(object):
 
     CARD_WIDTH_PIXELS = 35
     CARD_HEIGHT_PIXELS = 50
+
+
+    KNN_N_NEIGHBORS = 1
+    KNN_N_JOBS = -1

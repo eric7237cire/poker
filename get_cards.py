@@ -10,7 +10,7 @@ import cv2
 import sys
 import os
 from datetime import datetime
-
+from card_util import *
 
 from configuration import Config as cfg
 from get_screenshot import capture_screenshot
@@ -19,37 +19,6 @@ def midpoint(ptA, ptB):
     return ((ptA[0] + ptB[0]) * 0.5, (ptA[1] + ptB[1]) * 0.5)
 
 
-def clip_and_save(p_orig_image, x,y,w,h, file_name):
-    """
-
-    :param p_orig_image:  cv2 image with dimensions [y][x][RGB] = 0-255
-    :param contour_to_crop:
-    :param file_name:
-    :return:
-    """
-
-    os.makedirs(cfg.EXTRACTED_IMAGES_PATH, exist_ok=True)
-
-
-    crop_img = p_orig_image[ y:y+h+1, x:x+w+1]
-
-    # save the result
-    cv2.imwrite(os.path.join(cfg.EXTRACTED_IMAGES_PATH, file_name), crop_img)
-
-def get_black_and_white_image(image):
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-    # Will set everything below 200 to black, above to 255 (maxval/white)
-    flag, thresh = cv2.threshold(gray, thresh=200, maxval=255, type=cv2.THRESH_BINARY)
-
-    return thresh
-
-def find_contours(image):
-    cnts = cv2.findContours(image, cv2.RETR_EXTERNAL,
-                            cv2.CHAIN_APPROX_SIMPLE)
-    cnts = cnts[0] if imutils.is_cv2() else cnts[1]
-
-    return cnts
 
 def main():
 

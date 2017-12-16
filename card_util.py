@@ -1,0 +1,115 @@
+import cv2
+import imutils
+import os
+import matplotlib.pyplot as plt
+from datetime import datetime
+from configuration import Config as cfg
+import numpy as np
+from matplotlib.path import Path
+
+def generate_points_list(width, height):
+    """
+    returns a 2d array, x,y of all points in an
+    integer grid of width/height
+
+    """
+    x, y = np.meshgrid(np.arange(width), np.arange(height))
+    x, y = x.flatten(), y.flatten()
+
+    points = np.vstack((x, y)).T
+
+    return points
+
+
+def extract_polygon_mask_from_contour(contour, width, height, all_grid_points_list):
+    """
+
+    :param contour: a y/x list of points
+    :return: An image of height x width with True where the pixel is in the
+    polygon defined by the contour
+    """
+
+    # https://stackoverflow.com/questions/4857927/swapping-columns-in-a-numpy-array
+    contour_xy = contour[:, [1,0]]
+
+    #https://matplotlib.org/api/path_api.html#matplotlib.path.Path
+    path = Path(contour_xy)
+    grid = path.contains_points(all_grid_points_list, radius=-1)
+    grid = grid.reshape((height, width))
+
+    return grid
+
+
+def extract_image_with_mask(image, boolean_mask, background_color):
+    """
+
+    :param image:
+    :param boolean_mask: same size as image, True to extract
+    :return:
+    """
+    r_image = image.copy()
+
+    r_image[np.logical_not(boolean_mask)] = background_color
+
+    return r_image
+
+def show_image(image):
+    """
+
+    :param image: 2d array, first dimension y
+    :return:
+    """
+    fig, ax = plt.subplots()
+    ax.imshow(image, interpolation='nearest', cmap=plt.cm.gray)
+    ax.axis('image')
+    ax.set_xticks([])
+    ax.set_yticks([])
+    plt.show()
+
+
+def show_image_and_contour(image, contour):
+    """
+
+    :param image: 2d array, first dimension y
+    :return:
+    """
+    fig, ax = plt.subplots()
+    ax.plot(contour[:, 1], contour[:, 0], linewidth=2)
+    ax.imshow(image, interpolation='nearest', cmap=plt.cm.gray)
+    ax.axis('image')
+    ax.set_xticks([])
+    ax.set_yticks([])
+    plt.show()
+
+def find_contours(image):
+    cnts = cv2.findContours(image, cv2.RETR_EXTERNAL,
+                            cv2.CHAIN_APPROX_SIMPLE)
+    cnts = cnts[0] if imutils.is_cv2() else cnts[1]
+
+    return cnts
+
+
+def get_black_and_white_image(image):
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # Will set everything below 200 to black, above to 255 (maxval/white)
+    flag, thresh = cv2.threshold(gray, thresh=200, maxval=255, type=cv2.THRESH_BINARY)
+
+    return thresh
+
+
+def clip_and_save(p_orig_image, x, y, w, h, file_name):
+    """
+
+    :param p_orig_image:  cv2 image with dimensions [y][x][RGB] = 0-255
+    :param contour_to_crop:
+    :param file_name:
+    :return:
+    """
+
+    os.makedirs(cfg.EXTRACTED_IMAGES_PATH, exist_ok=True)
+
+    crop_img = p_orig_image[y:y + h + 1, x:x + w + 1]
+
+    # save the result
+    cv2.imwrite(os.path.join(cfg.EXTRACTED_IMAGES_PATH, file_name), crop_img)

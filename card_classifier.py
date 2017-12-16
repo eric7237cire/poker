@@ -14,6 +14,7 @@ import logging
 import sys
 logger = logging.getLogger(__name__)
 
+from card_util import *
 
 class Card(object):
 
@@ -34,6 +35,10 @@ def diff_2d_array(image1, image2):
                               np.int16(image2)))
 
 def diff_images(card1, card2):
+
+    if card1.card_file_name == "2h_2.png" and \
+            card2.card_file_name == "2h.png":
+        print("bob")
 
     return diff_2d_array(card1.suit_image,
                          card2.suit_image)

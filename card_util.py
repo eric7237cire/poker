@@ -6,6 +6,58 @@ from datetime import datetime
 from configuration import Config as cfg
 import numpy as np
 from matplotlib.path import Path
+from scipy.misc import imresize
+from skimage import measure
+
+
+def display_image_with_contours(grey_array, contours):
+    # Display the image and plot all contours found
+    fig, ax = plt.subplots()
+    ax.imshow(grey_array, interpolation='nearest', cmap=plt.cm.gray)
+
+    for n, contour in enumerate(contours):
+        ax.plot(contour[:, 1], contour[:, 0], linewidth=2)
+
+    ax.axis('image')
+    ax.set_xticks([])
+    ax.set_yticks([])
+    plt.show()
+
+def card_to_grayscale_2d_array(image):
+    grey_scale = image.convert('L')
+
+    grey_array = np.array(grey_scale)
+
+    grey_array = imresize(arr=grey_array, size=(cfg.CARD_HEIGHT_PIXELS, cfg.CARD_WIDTH_PIXELS))
+
+    return grey_array
+
+
+def find_contours_in_card(image, grey_array):
+    """
+
+    :param image: PIL image
+    :return:  iterable of contours in card, matching the
+    number and symbol
+    """
+
+    # grey_array[grey_array < 150] = 0
+    # grey_array[grey_array >= 150] = 255
+
+    # http://scikit-image.org/docs/dev/auto_examples/edges/plot_contours.html?highlight=find_contours
+    all_contours = measure.find_contours(grey_array, 200)
+
+    for contour in all_contours:
+        min_x, min_y = np.min(contour, axis=0)
+        max_x, max_y = np.max(contour, axis=0)
+
+        width = max_x - min_x
+        height = max_y - min_y
+        if width < 5 or width > 15:
+            continue
+
+        yield contour
+
 
 def generate_points_list(width, height):
     """
@@ -30,9 +82,9 @@ def extract_polygon_mask_from_contour(contour, width, height, all_grid_points_li
     """
 
     # https://stackoverflow.com/questions/4857927/swapping-columns-in-a-numpy-array
-    contour_xy = contour[:, [1,0]]
+    contour_xy = contour[:, [1, 0]]
 
-    #https://matplotlib.org/api/path_api.html#matplotlib.path.Path
+    # https://matplotlib.org/api/path_api.html#matplotlib.path.Path
     path = Path(contour_xy)
     grid = path.contains_points(all_grid_points_list, radius=-1)
     grid = grid.reshape((height, width))
@@ -43,15 +95,17 @@ def extract_polygon_mask_from_contour(contour, width, height, all_grid_points_li
 def extract_image_with_mask(image, boolean_mask, background_color):
     """
 
-    :param image:
+    :param image: 2d numpy array, y x
     :param boolean_mask: same size as image, True to extract
-    :return:
+    :param background_color what color to set where boolean_mask is False
+    :return: copy of image
     """
     r_image = image.copy()
 
     r_image[np.logical_not(boolean_mask)] = background_color
 
     return r_image
+
 
 def show_image(image):
     """
@@ -80,6 +134,7 @@ def show_image_and_contour(image, contour):
     ax.set_xticks([])
     ax.set_yticks([])
     plt.show()
+
 
 def find_contours(image):
     cnts = cv2.findContours(image, cv2.RETR_EXTERNAL,

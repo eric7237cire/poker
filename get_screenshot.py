@@ -1,6 +1,7 @@
 import os
 from PIL import ImageGrab
 import win32gui
+from PIL import Image, ImageDraw
 
 toplist, winlist = [], []
 def enum_cb(hwnd, results):

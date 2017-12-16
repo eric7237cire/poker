@@ -21,12 +21,14 @@ logger = logging.getLogger(__name__)
 def main():
     file_path = os.path.join(
         cfg.CARD_DATA_PATH,
-        '2h.png'
+        #'2h.png'
+        'ac.png'
     )
 
     # image = cv2.imread(file_path)
     image = Image.open(file_path)
 
+    get_suit_and_number(image)
 
 def get_suit_and_number(image):
     grey_array = card_to_grayscale_2d_array(image)
@@ -38,7 +40,8 @@ def get_suit_and_number(image):
     number_image = None
     suit_image = None
 
-    for idx, contour in enumerate(find_contours_in_card(image, grey_array=grey_array)):
+    for idx, contour in enumerate(find_contours_in_card(
+            image, grey_array=grey_array, max_width=15)):
 
         boolean_mask = extract_polygon_mask_from_contour(
             contour,
@@ -51,16 +54,21 @@ def get_suit_and_number(image):
 
         # show_image_and_contour(extracted_image, contour)
 
-        # print(f"Found contour {min_x} {max_x} {min_y} {max_y}\n{contour}")
+
 
         if idx == 0:
             number_image = extracted_image
-        elif idx == 0:
+        elif idx == 1:
             suit_image = extracted_image
         else:
-            logging.warning("Extracted more than one image")
+            logger.warning("Extracted too many images")
 
         contours.append(contour)
+
+    #display_image_with_contours(grey_array, contours)
+
+    if suit_image is None or number_image is None:
+        logger.warning("Could not extract both suit and number")
 
     return suit_image, number_image
 

@@ -23,6 +23,7 @@ def display_image_with_contours(grey_array, contours):
     ax.set_yticks([])
     plt.show()
 
+
 def card_to_grayscale_2d_array(image):
     grey_scale = image.convert('L')
 
@@ -33,7 +34,7 @@ def card_to_grayscale_2d_array(image):
     return grey_array
 
 
-def find_contours_in_card(image, grey_array):
+def find_contours_in_card(image, grey_array, min_width=5, max_width=15):
     """
 
     :param image: PIL image
@@ -45,16 +46,20 @@ def find_contours_in_card(image, grey_array):
     # grey_array[grey_array >= 150] = 255
 
     # http://scikit-image.org/docs/dev/auto_examples/edges/plot_contours.html?highlight=find_contours
-    all_contours = measure.find_contours(grey_array, 200)
+    all_contours = measure.find_contours(grey_array, 150)
 
     for contour in all_contours:
-        min_x, min_y = np.min(contour, axis=0)
-        max_x, max_y = np.max(contour, axis=0)
+        min_y, min_x = np.min(contour, axis=0)
+        max_y, max_x = np.max(contour, axis=0)
 
         width = max_x - min_x
         height = max_y - min_y
-        if width < 5 or width > 15:
+
+
+        if width < min_width or width > max_width:
             continue
+
+        #print(f"Found contour @ {min_x},{min_y} Width={width} Height={height} Numpoints={len(contour)}")
 
         yield contour
 

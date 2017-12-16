@@ -10,6 +10,10 @@ import os
 from configuration import Config as cfg
 from PIL import Image, ImageDraw
 from get_card_suit_and_number import get_suit_and_number
+import logging
+import sys
+logger = logging.getLogger(__name__)
+
 
 class Card(object):
 
@@ -18,31 +22,23 @@ class Card(object):
         self.card_file_name = card_file_name
         self.card_image = card_image
 
-        self.suit_image=None
+        self.suit_image = None
         self.number_image = None
 
 
+def diff_2d_array(image1, image2):
+    if image1 is None or image2 is None:
+        return 10000000000000
+    # See also https://stackoverflow.com/questions/35777830/fast-absolute-difference-of-two-uint8-arrays
+    return np.sum(np.absolute(np.int16(image1) -
+                              np.int16(image2)))
+
 def diff_images(card1, card2):
-    # cv2.imshow("Image1", img1)
-    # cv2.imshow("Image2", img2)
 
-    # cv2.imshow("Image", image_copy)
+    return diff_2d_array(card1.suit_image,
+                         card2.suit_image)
+    + diff_2d_array(card1.number_image, card2.number_image)
 
-    diff = np.absolute(card1.suit_image, card2.suit_image)
-
-    # cv2.imshow("P Image1", p_img1)
-    # cv2.imshow("P Image2", p_img2)
-    # cv2.imshow("diff", diff)
-
-    # diff = cv2.GaussianBlur(diff,(5,5),5)
-    # flag, diff = cv2.threshold(diff, 100, 255, cv2.THRESH_BINARY)
-    diff_sum = np.sum(diff)
-
-    # cv2.imshow("diff2", diff)
-    # print (diff_sum)
-    # cv2.waitKey(0)
-
-    return diff_sum
 
 
 def main():
@@ -72,7 +68,7 @@ def main():
         # File name should be like ac for Ace of clubs or 2d for 2 of diamonds
         label = ranks.index(file_name[0]) + 13 * suits.index(file_name[1])
 
-        print("Label is {} for file name {}".format(label, file_name))
+        logger.info("Label is {} for file name {}".format(label, file_name))
 
         card = Card(card_index=label, card_file_name=file_name, card_image=image)
 
@@ -93,10 +89,10 @@ def main():
 
         # show an update every 1,000 images
         # if i > 0 and i % 1000 == 0:
-        print("[INFO] processed {}/{}".format(i, len(imagePaths)))
+        logger.info("[INFO] processed {}/{}".format(i, len(imagePaths)))
 
     for card in cards_to_eval:
-        print(f"Evaluating {card.card_file_name} / {card.card_index} ")
+        logger.debug(f"Evaluating {card.card_file_name} / {card.card_index} ")
 
         card_diffs = [diff_images(card, t) for t in test_cards]
 
@@ -107,6 +103,16 @@ def main():
     return
 
 
-
 if __name__ == "__main__":
+    root = logging.getLogger()
+    root.setLevel(logging.DEBUG)
+
+    ch = logging.StreamHandler(sys.stdout)
+    ch.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    ch.setFormatter(formatter)
+    root.addHandler(ch)
+
+    logging.getLogger("PIL.PngImagePlugin").setLevel(logging.INFO)
+
     main()

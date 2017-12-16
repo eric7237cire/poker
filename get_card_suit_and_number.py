@@ -22,7 +22,7 @@ def main():
     file_path = os.path.join(
         cfg.CARD_DATA_PATH,
         #'2h.png'
-        'ac.png'
+        '9s.png'
     )
 
     # image = cv2.imread(file_path)
@@ -41,7 +41,9 @@ def get_suit_and_number(image):
     suit_image = None
 
     for idx, contour in enumerate(find_contours_in_card(
-            image, grey_array=grey_array, max_width=15)):
+            image, grey_array=grey_array,
+            min_width=7,
+            max_width=15)):
 
         boolean_mask = extract_polygon_mask_from_contour(
             contour,
@@ -65,7 +67,8 @@ def get_suit_and_number(image):
 
         contours.append(contour)
 
-    #display_image_with_contours(grey_array, contours)
+    if __name__ == "__main__":
+        display_image_with_contours(grey_array, contours)
 
     if suit_image is None or number_image is None:
         logger.warning("Could not extract both suit and number")

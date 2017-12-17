@@ -80,11 +80,12 @@ class CardContour():
         self.contour = None
         self.grey_array = None
 
+
 def get_suit_and_number(image, has_2_cards=False):
     """
     Takes a PIL.Image
     :param image:
-    :return:
+    :return: Suit card contour object and number card contour object
     """
     grey_array = card_to_grayscale_2d_array(image)
 
@@ -95,14 +96,14 @@ def get_suit_and_number(image, has_2_cards=False):
             min_width=5,
             max_width=15)):
 
-
         card_contour = CardContour()
         card_contour.min_y, card_contour.min_x = np.min(contour, axis=0)
         card_contour.max_y, card_contour.max_x = np.max(contour, axis=0)
         card_contour.contour = contour
         card_contour.grey_array = grey_array
         card_contours.append(card_contour)
-        # show_image_and_contour(extracted_image, contour)
+
+
 
     sorted_by_x = sorted(card_contours, key=lambda c: c.min_x)
 

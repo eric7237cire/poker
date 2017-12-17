@@ -85,3 +85,25 @@ class TestGetCards(unittest.TestCase):
                          msg=card_classifier.get_card_string(gi.hole_cards[0]))
         self.assertEqual(gi.hole_cards[1], card_classifier.get_card_id('5', 'h'),
                          msg=card_classifier.get_card_string(gi.hole_cards[1]))
+
+
+    def test_get_hole_cards_3(self):
+        file_path = os.path.join(self.UNIT_TEST_DATA_DIR, 'screenshot_with_hole_cards_3.png')
+        card_classifier = CardClassifier()
+
+        gi = extract_cards_from_screenshot(screenshot_file_path=file_path, card_classifier=card_classifier)
+
+
+
+        self.assertEqual(gi.common_cards[0], card_classifier.get_card_id('2', 'h'),
+                         msg=card_classifier.get_card_string(gi.common_cards[0]))
+        self.assertEqual(gi.common_cards[1], card_classifier.get_card_id('9', 'd'))
+        self.assertEqual(gi.common_cards[2], card_classifier.get_card_id('8', 'h'),
+                         msg=card_classifier.get_card_string(gi.common_cards[2]))
+        self.assertEqual(gi.common_cards[3], card_classifier.get_card_id('9', 'c'))
+        self.assertEqual(gi.common_cards[4], card_classifier.get_card_id('7', 'h'))
+
+        self.assertEqual(gi.hole_cards[0], card_classifier.get_card_id('t', 's'),
+                         msg=card_classifier.get_card_string(gi.hole_cards[0]))
+        self.assertEqual(gi.hole_cards[1], card_classifier.get_card_id('j', 'c'),
+                         msg=card_classifier.get_card_string(gi.hole_cards[1]))

@@ -62,7 +62,10 @@ def card_to_grayscale_2d_array(image):
     return grey_array
 
 
-def find_contours_in_card(image, grey_array, min_width=5, max_width=15):
+def find_contours_in_card(
+        image, grey_array, min_width=5, max_width=15,
+        min_height=5
+):
     """
 
     :param image: PIL image
@@ -83,8 +86,10 @@ def find_contours_in_card(image, grey_array, min_width=5, max_width=15):
         width = max_x - min_x
         height = max_y - min_y
 
-
         if width < min_width or width > max_width:
+            continue
+
+        if height < min_height:
             continue
 
         #print(f"Found contour @ {min_x},{min_y} Width={width} Height={height} Numpoints={len(contour)}")

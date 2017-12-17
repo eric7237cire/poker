@@ -128,9 +128,26 @@ class CardClassifier():
             # if i > 0 and i % 1000 == 0:
             logger.info("[INFO] processed {}/{}".format(i, len(imagePaths)))
 
+
+    def evaluate_hole_card_image(self, hole_card_image):
+
+        card1 = Card(card_index=None, card_file_name=None, card_image=hole_card_image)
+        card2 = Card(card_index=None, card_file_name=None, card_image=hole_card_image)
+
+        card1.suit_image, card1.number_image, card2.suit_image, card2.number_image = \
+            get_suit_and_number(hole_card_image, has_2_cards=True)
+
+        return self.evaluate_suit_and_number_images(card1), \
+             self.evaluate_suit_and_number_images(card2)
+
+
     def evaluate_card(self, card_image):
         card = Card(card_index=None, card_file_name=None, card_image=card_image)
         card.suit_image, card.number_image = get_suit_and_number(card_image)
+
+        return self.evaluate_suit_and_number_images(card)
+
+    def evaluate_suit_and_number_images(self, card):
 
         if card.number_image is None:
             return None

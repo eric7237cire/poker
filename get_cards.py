@@ -23,10 +23,36 @@ class GameInfo(object):
     def __init__(self):
 
         self.common_cards = []
+        self.hole_cards =[]
+
+
+def get_hole_cards(screenshot_file_path, card_classifier, game_info):
+
+
+    image = Image.open(screenshot_file_path)
+
+    image_array = np.array(image)
+
+    image_array = cfg.PLAYER_DIMENSIONS[0].clip_2d_array(image_array)
+
+    cropped_image = Image.fromarray(image_array)
+
+    game_info.hole_cards = card_classifier.evaluate_hole_card_image(cropped_image)
+
+    print("Found hole card {} and {}".format(
+        card_classifier.get_card_string(game_info.hole_cards[0]),
+        card_classifier.get_card_string(game_info.hole_cards[1])
+    ))
+
+
 
 def extract_cards_from_screenshot(screenshot_file_path, card_classifier):
 
     gi = GameInfo()
+
+    get_hole_cards(screenshot_file_path=screenshot_file_path,
+                   card_classifier=card_classifier,
+                   game_info=gi)
 
     image = cv2.imread(screenshot_file_path)
 
@@ -87,7 +113,7 @@ def extract_cards_from_screenshot(screenshot_file_path, card_classifier):
         if c is not None:
             gi.common_cards.append(c)
 
-    display_cv2_image_with_contours(bw, cnts)
+    # display_cv2_image_with_contours(bw, cnts)
     return gi
 
 def main():

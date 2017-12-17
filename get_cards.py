@@ -121,7 +121,6 @@ class NumberReader(object):
             numbers_found = []
 
             for digit_contour in digit_contours:
-
                 card_diffs = [diff_polygons(digit_contour, t[1]) for t in self.training_data]
                 idx = np.argmin(card_diffs, axis=0)
 
@@ -135,9 +134,10 @@ class NumberReader(object):
                 this_bet_value = int("".join([str(n) for n in numbers_found if n >= 0]))
 
             bet_value += this_bet_value
-            #display_image_with_contours(just_text_grey_array, [c.points_array for c in digit_contours])
+            # display_image_with_contours(just_text_grey_array, [c.points_array for c in digit_contours])
 
         return bet_value
+
 
 def get_hole_cards(screenshot_file_path, card_classifier, game_info):
     image_array = get_game_area_as_2d_array(screenshot_file_path)

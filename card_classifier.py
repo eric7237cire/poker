@@ -21,7 +21,7 @@ from card_util import *
 class Card(object):
 
     def __init__(self, card_index, card_file_name, card_image):
-        self.card_index = card_index
+        self.card_id = card_index
         self.card_file_name = card_file_name
         self.card_image = card_image
 
@@ -59,6 +59,19 @@ def diff_images(card1, card2):
            diff_polygons(card1.number_image, card2.number_image)
 
 class CardClassifier():
+    RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', 't', 'j', 'q', 'k', 'a']
+    SUITS = ['d', 'c', 's', 'h']
+
+    def get_card_id(self,rank, suit):
+        # File name should be like ac for Ace of clubs or 2d for 2 of diamonds
+        return self.RANKS.index(rank) + 13 * self.SUITS.index(suit)
+
+    def get_card_string(self, card_id):
+
+        suit = int(card_id / 13)
+        rank = card_id % 13
+
+        return "{} of {}".format(self.RANKS[rank], self.SUITS[suit])
 
     def __init__(self):
         imagePaths = list(paths.list_images(cfg.CARD_DATA_PATH))
@@ -74,8 +87,7 @@ class CardClassifier():
         self.test_cards = []
         self.cards_to_eval = []
 
-        ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'j', 'q', 'k', 'a']
-        suits = ['d', 'c', 's', 'h']
+
 
         # loop over the input images
         for (i, imagePath) in enumerate(imagePaths):
@@ -84,7 +96,7 @@ class CardClassifier():
             file_name = os.path.basename(imagePath)
 
             # File name should be like ac for Ace of clubs or 2d for 2 of diamonds
-            label = ranks.index(file_name[0]) + 13 * suits.index(file_name[1])
+            label = self.get_card_id(rank=file_name[0], suit=file_name[1])
 
             logger.info("Label is {} for file name {}".format(label, file_name))
 
@@ -116,14 +128,14 @@ class CardClassifier():
         card.suit_image, card.number_image = get_suit_and_number(card_image)
 
         if card.number_image is None:
-            return "Could not parse image"
+            return None
 
         card_diffs = [diff_images(card, t) for t in self.test_cards]
 
         # index = np.argmin(card_diffs, axis=0)
         index = np.argmin(card_diffs, axis=0)
 
-        return self.test_cards[index].card_file_name
+        return self.test_cards[index].card_id
 
 
     def evaluate_accuracy(self):

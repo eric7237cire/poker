@@ -18,32 +18,17 @@ from card_classifier import *
 
 from PIL import Image, ImageDraw
 
-def midpoint(ptA, ptB):
-    return ((ptA[0] + ptB[0]) * 0.5, (ptA[1] + ptB[1]) * 0.5)
+class GameInfo(object):
 
+    def __init__(self):
 
+        self.common_cards = []
 
-def main():
+def extract_cards_from_screenshot(screenshot_file_path, card_classifier):
 
-    card_classifier = CardClassifier()
+    gi = GameInfo()
 
-    try:
-        os.makedirs(cfg.SCREENSHOTS_PATH, exist_ok=True)
-        shutil.rmtree(cfg.EXTRACTED_IMAGES_PATH, ignore_errors=True)
-        os.makedirs(cfg.EXTRACTED_IMAGES_PATH, exist_ok=True)
-    except Exception as ex:
-        print(ex)
-
-    now = datetime.now()
-    formatted_time = now.strftime("%Y_%m_%d__%H_%M_%S_%f")
-
-    file_path = os.path.join(cfg.SCREENSHOTS_PATH, 'screenshot_{}.png'.format(formatted_time))
-    capture_screenshot("chrome", output_file_path=file_path)
-
-    #file_path=os.path.join(cfg.SCREENSHOTS_PATH, "screenshot_2017_12_15__19_59_16_686117.png")
-
-    # load the image, convert it to grayscale, and blur it slightly
-    image = cv2.imread(file_path)
+    image = cv2.imread(screenshot_file_path)
 
     bw = get_black_and_white_image(image)
     cnts = find_contours(bw)
@@ -63,7 +48,7 @@ def main():
         if w < cfg.CARD_WIDTH_PIXELS - 5 or w > cfg.CARD_WIDTH_PIXELS + 5:
             continue
 
-        if h < cfg.CARD_HEIGHT_PIXELS -5 or h > cfg.CARD_HEIGHT_PIXELS + 5:
+        if h < cfg.CARD_HEIGHT_PIXELS - 5 or h > cfg.CARD_HEIGHT_PIXELS + 5:
             continue
 
         crop_img = image_array[y:y + h + 1, x:x + w + 1]
@@ -83,13 +68,34 @@ def main():
 
         print(f"Classified {idx} as {c}")
 
+        if c is not None:
+            gi.common_cards.append(c)
 
+    return gi
 
+def main():
+    card_classifier = CardClassifier()
 
+    try:
+        os.makedirs(cfg.SCREENSHOTS_PATH, exist_ok=True)
+        shutil.rmtree(cfg.EXTRACTED_IMAGES_PATH, ignore_errors=True)
+        os.makedirs(cfg.EXTRACTED_IMAGES_PATH, exist_ok=True)
+    except Exception as ex:
+        print(ex)
+
+    now = datetime.now()
+    formatted_time = now.strftime("%Y_%m_%d__%H_%M_%S_%f")
+
+    file_path = os.path.join(cfg.SCREENSHOTS_PATH, 'screenshot_{}.png'.format(formatted_time))
+    capture_screenshot("chrome", output_file_path=file_path)
+
+    # file_path=os.path.join(cfg.SCREENSHOTS_PATH, "screenshot_2017_12_15__19_59_16_686117.png")
+
+    # load the image, convert it to grayscale, and blur it slightly
 
     # show the output image
-    #cv2.imshow("Image", bw)
-    #cv2.imshow("Image", image_copy)
+    # cv2.imshow("Image", bw)
+    # cv2.imshow("Image", image_copy)
     cv2.waitKey(0)
 
 

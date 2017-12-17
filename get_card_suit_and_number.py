@@ -24,7 +24,7 @@ def main():
         '..',
         'unit_test_data',
         'screenshot_with_hole_cards.png'
-        #'7s_2.png'
+        # '7s_2.png'
         # '2h.png'
         # '9s.png'
     )
@@ -42,16 +42,15 @@ def main():
 
     image_array = np.array(image)
 
-    #image_array = cfg.PLAYER_DIMENSIONS[0].clip_2d_array(image_array)
+    # image_array = cfg.PLAYER_DIMENSIONS[0].clip_2d_array(image_array)
 
     cropped_image = Image.fromarray(image_array)
-
 
     card_contours = get_suit_and_number(cropped_image, has_2_cards=False)
 
     display_image_with_contours(card_contours[0].grey_array,
                                 [x.contour for x in card_contours])
-    #display_image_with_contours(image_array, [])
+    # display_image_with_contours(image_array, [])
 
 
 def main2():
@@ -59,13 +58,11 @@ def main2():
         cfg.CARD_DATA_PATH,
         '7s_2.png'
         # '2h.png'
-        #'9s.png'
+        # '9s.png'
     )
 
     # image = cv2.imread(file_path)
     image = Image.open(file_path)
-
-
 
 
 class CardContour():
@@ -99,7 +96,6 @@ def get_suit_and_number(image, has_2_cards=False):
             image, grey_array=grey_array,
             min_width=5,
             max_width=15)):
-
         card_contour = CardContour()
         card_contour.min_y, card_contour.min_x = np.min(contour, axis=0)
         card_contour.max_y, card_contour.max_x = np.max(contour, axis=0)
@@ -107,7 +103,10 @@ def get_suit_and_number(image, has_2_cards=False):
         card_contour.grey_array = grey_array
         card_contours.append(card_contour)
 
-    # display_image_with_contours(grey_array, [c.contour for c in card_contours])
+
+    if has_2_cards:
+        #display_image_with_contours(grey_array, [c.contour for c in card_contours])
+        pass
 
     sorted_by_x = sorted(card_contours, key=lambda c: c.min_x)
 
@@ -115,8 +114,8 @@ def get_suit_and_number(image, has_2_cards=False):
 
         if len(sorted_by_x) < 4:
             logger.warning("Not enough images for hole cards")
-            display_image_with_contours(grey_array, [c.contour for c in card_contours])
-            return None
+            # display_image_with_contours(grey_array, [c.contour for c in card_contours])
+            return None, None, None, None
 
         sorted_contours_1 = sorted(sorted_by_x[0:2], key=lambda c: c.min_y)
         sorted_contours_2 = sorted(sorted_by_x[-3:-1], key=lambda c: c.min_y)
@@ -127,7 +126,7 @@ def get_suit_and_number(image, has_2_cards=False):
         if len(sorted_by_x) < 2:
             logger.warning("Not enough images for cards")
             display_image_with_contours(grey_array, [c.contour for c in card_contours])
-            return None
+            return None, None
 
         sorted_by_y = sorted(sorted_by_x[0:2], key=lambda c: c.min_y)
         return sorted_by_y[1], sorted_by_y[0]

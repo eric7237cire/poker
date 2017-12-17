@@ -132,6 +132,8 @@ def main():
     file_path = os.path.join(cfg.SCREENSHOTS_PATH, 'screenshot_{}.png'.format(formatted_time))
     capture_screenshot("chrome", output_file_path=file_path)
 
+    #file_path = r"E:\git\poker\screenshots\screenshot_2017_12_17__14_54_05_754106.png"
+
     extract_cards_from_screenshot(file_path, card_classifier)
 
 

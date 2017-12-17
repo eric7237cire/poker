@@ -26,6 +26,6 @@ class Config(object):
 
     # min_x, max_x
     PLAYER_DIMENSIONS = [
-        BoundingBox(min_x=320, max_x=440, min_y=590, max_y=700)
+        BoundingBox(min_x=320, max_x=365, min_y=590, max_y=700)
 
     ]

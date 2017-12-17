@@ -70,7 +70,7 @@ class CardClassifier():
 
     def get_card_string(self, card_id):
 
-        if not card_id:
+        if not isinstance(card_id, int):
             return None
 
         suit = int(card_id / 13)

@@ -56,12 +56,12 @@ def get_suit_and_number(image):
 
         # show_image_and_contour(extracted_image, contour)
 
-
-
         if idx == 0:
-            number_image = extracted_image
+            #number_image = extracted_image
+            number_image = contour
         elif idx == 1:
-            suit_image = extracted_image
+            #suit_image = extracted_image
+            suit_image = contour
         else:
             logger.warning("Extracted too many images")
 

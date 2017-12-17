@@ -9,9 +9,11 @@ import cv2
 import os
 from configuration import Config as cfg
 from PIL import Image, ImageDraw
+from shapely.affinity import translate
 from get_card_suit_and_number import get_suit_and_number
 import logging
 import sys
+from shapely.geometry import Polygon
 logger = logging.getLogger(__name__)
 
 from card_util import *
@@ -34,15 +36,24 @@ def diff_2d_array(image1, image2):
     return np.sum(np.absolute(np.int16(image1) -
                               np.int16(image2)))
 
+
+def diff_polygons(contour1, contour2):
+
+    poly1 = Polygon(get_contour_xy(contour1))
+    poly2 = Polygon(get_contour_xy(contour2))
+
+    poly1 = translate(poly1, xoff=-poly1.bounds[0], yoff=-poly1.bounds[1])
+    poly2 = translate(poly2, xoff=-poly2.bounds[0], yoff=-poly2.bounds[1])
+
+    intersecting_area = poly1.intersection(poly2).area
+
+    return poly1.area + poly2.area - 2 * intersecting_area
+
+
 def diff_images(card1, card2):
-
-    if card1.card_file_name == "2h_2.png" and \
-            card2.card_file_name == "2h.png":
-        print("bob")
-
-    return diff_2d_array(card1.suit_image,
-                         card2.suit_image)
-    + diff_2d_array(card1.number_image, card2.number_image)
+    return diff_polygons(card1.suit_image,
+                         card2.suit_image) + \
+           diff_polygons(card1.number_image, card2.number_image)
 
 
 
@@ -54,6 +65,7 @@ def main():
     # initialize the raw pixel intensities matrix, the features matrix,
     # and labels list
     rawImages = []
+    file_name_to_card = {}
     features = []
     labels = []
     cards = []
@@ -86,6 +98,8 @@ def main():
 
         cards.append(card)
 
+        file_name_to_card[file_name] = card
+
         # update the raw images, features, and labels matricies,
         # respectively
         rawImages.append(image)
@@ -96,11 +110,29 @@ def main():
         # if i > 0 and i % 1000 == 0:
         logger.info("[INFO] processed {}/{}".format(i, len(imagePaths)))
 
+    c1 = file_name_to_card["2h.png"]
+    c2 = file_name_to_card["2h_2.png"]
+    c3 = file_name_to_card["5h.png"]
+
+    #display_image_with_contours(c1.card_image, [
+        #c1.number_image,
+        #c2.number_image,
+        #c3.number_image
+    #])
+
+    #d1 = diff_images(c1, c2)
+    #d2 = diff_images(c3, c2)
+
+    #print(d1)
+    #print(d2)
+    #return
+
     for card in cards_to_eval:
         logger.debug(f"Evaluating {card.card_file_name} / {card.card_index} ")
 
         card_diffs = [diff_images(card, t) for t in test_cards]
 
+        #index = np.argmin(card_diffs, axis=0)
         index = np.argmin(card_diffs, axis=0)
 
         print(f"Closest to {test_cards[index].card_file_name}")

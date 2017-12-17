@@ -13,7 +13,9 @@ from skimage import measure
 def display_image_with_contours(grey_array, contours):
     # Display the image and plot all contours found
     fig, ax = plt.subplots()
-    ax.imshow(grey_array, interpolation='nearest', cmap=plt.cm.gray)
+
+    if grey_array is not None:
+        ax.imshow(grey_array, interpolation='nearest', cmap=plt.cm.gray)
 
     for n, contour in enumerate(contours):
         ax.plot(contour[:, 1], contour[:, 0], linewidth=2)
@@ -76,6 +78,17 @@ def generate_points_list(width, height):
     points = np.vstack((x, y)).T
 
     return points
+
+
+def get_contour_xy(contour):
+    """
+    Contours are in y,x
+    :param contour:
+    :return: same points x,y
+    """
+    # https://stackoverflow.com/questions/4857927/swapping-columns-in-a-numpy-array
+    contour_xy = contour[:, [1, 0]]
+    return contour_xy
 
 
 def extract_polygon_mask_from_contour(contour, width, height, all_grid_points_list):

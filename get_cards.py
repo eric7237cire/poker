@@ -18,22 +18,21 @@ from card_classifier import *
 
 from PIL import Image, ImageDraw
 
+
 class GameInfo(object):
 
     def __init__(self):
-
         self.common_cards = []
-        self.hole_cards =[]
+        self.hole_cards = []
 
 
-def get_hole_cards(screenshot_file_path, card_classifier, game_info):
-
-
+def get_game_area_as_2d_array(screenshot_file_path):
     image = Image.open(screenshot_file_path)
 
     image_array = np.array(image)
 
-    image_array = image_array[cfg.ZYNGA_WINDOW_START_Y:cfg.ZYNGA_WINDOW_STOP_Y, cfg.ZYNGA_WINDOW_START_X:]
+    image_array = image_array[cfg.ZYNGA_WINDOW.min_y:cfg.ZYNGA_WINDOW.max_y,
+                  cfg.ZYNGA_WINDOW.min_x:]
 
     left_index = 0
 
@@ -46,11 +45,75 @@ def get_hole_cards(screenshot_file_path, card_classifier, game_info):
     left_index = i
 
     image_array = image_array[:, left_index:]
-  #  show_image(image_array)
+
+    return image_array
+
+
+class NumberReader(object):
+
+    def __init__(self):
+        self.train_numbers(file_path=os.path.join(cfg.NUMBER_DATA_PATH, 'numbers_1_to_6.png'),
+        hero_numbers=[1, 2, 3, 4, 5, 6])
+
+    def train_numbers(self, file_path, hero_numbers):
+        image_array = get_game_area_as_2d_array(file_path)
+
+        display_image_with_contours(image_array, [])
+
+        hero_bet_array = cfg.HERO_BETTING_AREA.clip_2d_array(image_array)
+
+        display_image_with_contours(hero_bet_array, [])
+
+
+def get_bets(screenshot_file_path):
+    image_array = get_game_area_as_2d_array(screenshot_file_path)
+
+    bet_image_array = cfg.BETS_AREA.clip_2d_array(image_array)
+    # get just green component
+
+    #display_image_with_contours(bet_image_array, [])
+
+    image_array = bet_image_array[:,:,1].copy()
+
+    image_array[image_array < 200] = 0
+
+    contours = find_contours_in_card(grey_array=image_array,
+                                     min_width=30,
+                                     max_width=100,
+                                     min_height=9,
+                                     max_height=15
+                                     )
+
+    contours = list(contours)
+    #display_image_with_contours(bet_image_array, [c[0] for c in contours])
+
+    for contour, bounding_box in contours:
+
+        just_text = bounding_box.clip_2d_array(bet_image_array)
+
+        just_text_image = Image.fromarray(just_text)
+        grey_scale_text = just_text_image.convert('L')
+        just_text_grey_array = np.array(grey_scale_text)
+
+        contours = find_contours_in_card(grey_array=just_text_grey_array,
+                                         min_width=2,
+                                         max_width=12,
+                                         min_height=5,
+                                         max_height=11,
+                                         value_threshold=80
+                                         )
+
+        display_image_with_contours(just_text_grey_array, [c[0] for c in contours])
+
+    pass
+
+def get_hole_cards(screenshot_file_path, card_classifier, game_info):
+
+    image_array = get_game_area_as_2d_array(screenshot_file_path)
 
     image_array = cfg.HERO_PLAYER_HOLE_CARDS_LOC.clip_2d_array(image_array)
 
-   # show_image(image_array)
+    # show_image(image_array)
 
     cropped_image = Image.fromarray(image_array)
 
@@ -62,10 +125,14 @@ def get_hole_cards(screenshot_file_path, card_classifier, game_info):
     ))
 
 
-
-def extract_cards_from_screenshot(screenshot_file_path, card_classifier):
-
+def extract_game_info_from_screenshot(screenshot_file_path, card_classifier):
     gi = GameInfo()
+
+    number_read = NumberReader()
+
+    #get_bets(screenshot_file_path)
+
+    return
 
     get_hole_cards(screenshot_file_path=screenshot_file_path,
                    card_classifier=card_classifier,
@@ -76,10 +143,10 @@ def extract_cards_from_screenshot(screenshot_file_path, card_classifier):
     image = image[400:600, 275:600]  # Crop from x, y, w, h -> 100, 200, 300, 400
     # NOTE: its img[y: y + h, x: x + w] and *not* img[x: x + w, y: y + h]
 
-    #cv2.imshow('image', image)
-    #cv2.waitKey(0)
-    #cv2.destroyAllWindows()
-    #display_cv2_image_with_contours(image, [])
+    # cv2.imshow('image', image)
+    # cv2.waitKey(0)
+    # cv2.destroyAllWindows()
+    # display_cv2_image_with_contours(image, [])
 
     bw = get_black_and_white_image(image)
     cnts = find_contours(bw)
@@ -92,7 +159,7 @@ def extract_cards_from_screenshot(screenshot_file_path, card_classifier):
         x, y, w, h = cv2.boundingRect(p_contour)
         return x
 
-    cnts = sorted(cnts, key= get_contour_sort_key)
+    cnts = sorted(cnts, key=get_contour_sort_key)
 
     # loop over the contours individually
     for idx, contour in enumerate(cnts):
@@ -107,8 +174,6 @@ def extract_cards_from_screenshot(screenshot_file_path, card_classifier):
 
         if h < cfg.CARD_HEIGHT_PIXELS - 5 or h > cfg.CARD_HEIGHT_PIXELS + 15:
             continue
-
-
 
         clip_and_save(
             p_orig_image=image_copy,
@@ -133,6 +198,7 @@ def extract_cards_from_screenshot(screenshot_file_path, card_classifier):
     # display_cv2_image_with_contours(bw, cnts)
     return gi
 
+
 def main():
     card_classifier = CardClassifier()
 
@@ -149,10 +215,9 @@ def main():
     file_path = os.path.join(cfg.SCREENSHOTS_PATH, 'screenshot_{}.png'.format(formatted_time))
     capture_screenshot("chrome", output_file_path=file_path)
 
-    #file_path = r"E:\git\poker\screenshots\screenshot_2017_12_17__14_54_05_754106.png"
+    # file_path = r"E:\git\poker\screenshots\screenshot_2017_12_17__14_54_05_754106.png"
 
-    extract_cards_from_screenshot(file_path, card_classifier)
-
+    extract_game_info_from_screenshot(file_path, card_classifier)
 
 
 if __name__ == '__main__':

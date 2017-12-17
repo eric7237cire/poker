@@ -9,7 +9,7 @@ from matplotlib.path import Path
 from scipy.misc import imresize
 from skimage import measure
 import matplotlib.patches as patches
-
+from configuration import BoundingBox
 
 def display_cv2_image_with_contours(grey_array, contours):
     # Display the image and plot all contours found
@@ -63,8 +63,9 @@ def card_to_grayscale_2d_array(image):
 
 
 def find_contours_in_card(
-        image, grey_array, min_width=5, max_width=15,
-        min_height=5
+        grey_array, min_width=5, max_width=15,
+        min_height=5, max_height = 100,
+        value_threshold=150
 ):
     """
 
@@ -77,26 +78,28 @@ def find_contours_in_card(
     # grey_array[grey_array >= 150] = 255
 
     # http://scikit-image.org/docs/dev/auto_examples/edges/plot_contours.html?highlight=find_contours
-    all_contours = measure.find_contours(grey_array, 150)
+    all_contours = measure.find_contours(grey_array, value_threshold)
 
     for contour in all_contours:
-        min_y, min_x = np.min(contour, axis=0)
-        max_y, max_x = np.max(contour, axis=0)
 
-        width = max_x - min_x
-        height = max_y - min_y
+        b = BoundingBox()
+        b.min_y, b.min_x = np.min(contour, axis=0)
+        b.max_y, b.max_x = np.max(contour, axis=0)
+
+        width = b.max_x - b.min_x
+        height = b.max_y - b.min_y
 
         if width < min_width or width > max_width:
             continue
 
-        if height < min_height:
+        if height < min_height or height > max_height:
             continue
 
         #print(f"Found contour @ {min_x},{min_y} Width={width} Height={height} Numpoints={len(contour)}")
         if not np.array_equal(contour[0],contour[-1]):
             contour = np.append(contour, np.expand_dims(contour[0], axis=0), axis=0)
 
-        yield contour
+        yield contour, b
 
 
 def generate_points_list(width, height):

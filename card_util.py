@@ -11,6 +11,31 @@ from skimage import measure
 import matplotlib.patches as patches
 from dto import BoundingBox, Contour
 
+from shapely.affinity import translate
+import logging
+import sys
+from shapely.geometry import Polygon
+
+
+def diff_polygons(contour_1, contour_2):
+    """
+
+    :return: Total of non intersecting area
+    """
+
+    if contour_1 is None or contour_2 is None:
+        return 10000000000000
+
+    poly1 = Polygon(get_contour_xy(contour_1.points_array))
+    poly2 = Polygon(get_contour_xy(contour_2.points_array))
+
+    poly1 = translate(poly1, xoff=-poly1.bounds[0], yoff=-poly1.bounds[1])
+    poly2 = translate(poly2, xoff=-poly2.bounds[0], yoff=-poly2.bounds[1])
+
+    intersecting_area = poly1.intersection(poly2).area
+
+    return poly1.area + poly2.area - 2 * intersecting_area
+
 def display_cv2_image_with_contours(grey_array, contours):
     # Display the image and plot all contours found
     fig, ax = plt.subplots(1)

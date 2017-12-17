@@ -13,10 +13,12 @@ from shapely.affinity import translate
 from get_card_suit_and_number import get_suit_and_number
 import logging
 import sys
-from shapely.geometry import Polygon
-logger = logging.getLogger(__name__)
 
 from card_util import *
+from shapely.geometry import Polygon
+
+logger = logging.getLogger(__name__)
+
 
 class Card(object):
 
@@ -37,34 +39,19 @@ def diff_2d_array(image1, image2):
                               np.int16(image2)))
 
 
-def diff_polygons(card_contour1, card_contour2):
-
-    if card_contour1 is None or card_contour2 is None:
-        return 10000000000000
-
-    poly1 = Polygon(get_contour_xy(card_contour1.contour))
-    poly2 = Polygon(get_contour_xy(card_contour2.contour))
-
-    poly1 = translate(poly1, xoff=-poly1.bounds[0], yoff=-poly1.bounds[1])
-    poly2 = translate(poly2, xoff=-poly2.bounds[0], yoff=-poly2.bounds[1])
-
-    intersecting_area = poly1.intersection(poly2).area
-
-    return poly1.area + poly2.area - 2 * intersecting_area
-
-
 def diff_images(card1, card2):
     return diff_polygons(card1.suit_image,
                          card2.suit_image) + \
            diff_polygons(card1.number_image, card2.number_image)
 
-class CardClassifier():
+
+class CardClassifier(object):
     RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', 't', 'j', 'q', 'k', 'a']
     SUITS = ['d', 'c', 's', 'h']
 
     SUITS_VERBOSE = ['Diamonds', 'Clubs', 'Spades', 'Hearts']
 
-    def get_card_id(self,rank, suit):
+    def get_card_id(self, rank, suit):
         # File name should be like ac for Ace of clubs or 2d for 2 of diamonds
         return self.RANKS.index(rank) + 13 * self.SUITS.index(suit)
 
@@ -79,7 +66,7 @@ class CardClassifier():
         return "{} of {}".format(self.RANKS[rank].upper(), self.SUITS_VERBOSE[suit])
 
     def __init__(self):
-        imagePaths = list(paths.list_images(cfg.CARD_DATA_PATH))
+        image_paths = list(paths.list_images(cfg.CARD_DATA_PATH))
 
         # initialize the raw pixel intensities matrix, the features matrix,
         # and labels list
@@ -92,10 +79,8 @@ class CardClassifier():
         self.test_cards = []
         self.cards_to_eval = []
 
-
-
         # loop over the input images
-        for (i, imagePath) in enumerate(imagePaths):
+        for (i, imagePath) in enumerate(image_paths):
             image = Image.open(imagePath)
 
             file_name = os.path.basename(imagePath)
@@ -126,22 +111,19 @@ class CardClassifier():
 
             # show an update every 1,000 images
             # if i > 0 and i % 1000 == 0:
-            logger.info("[INFO] processed {}/{}".format(i, len(imagePaths)))
-
+            logger.info("[INFO] processed {}/{}".format(i, len(image_paths)))
 
     def evaluate_hole_card_image(self, hole_card_image):
 
         card1 = Card(card_index=None, card_file_name=None, card_image=hole_card_image)
         card2 = Card(card_index=None, card_file_name=None, card_image=hole_card_image)
 
-        #display_image_with_contours(np.array(hole_card_image), [])
+        # display_image_with_contours(np.array(hole_card_image), [])
 
         card1.suit_image, card1.number_image, card2.suit_image, card2.number_image = \
             get_suit_and_number(hole_card_image, has_2_cards=True)
 
-        return self.evaluate_suit_and_number_images(card1), \
-             self.evaluate_suit_and_number_images(card2)
-
+        return self.evaluate_suit_and_number_images(card1), self.evaluate_suit_and_number_images(card2)
 
     def evaluate_card(self, card_image):
         card = Card(card_index=None, card_file_name=None, card_image=card_image)
@@ -149,7 +131,7 @@ class CardClassifier():
 
         if False:
             display_image_with_contours(card.suit_image.grey_array, [card.suit_image.contour,
-                card.number_image.contour])
+                                                                     card.number_image.contour])
 
         return self.evaluate_suit_and_number_images(card)
 
@@ -176,32 +158,31 @@ class CardClassifier():
 
             print(f"Closest to {self.test_cards[index].card_file_name}")
 
+
 def main():
     # grab the list of images that we'll be describing
     print("[INFO] describing images...")
 
-    classifier  = CardClassifier()
+    classifier = CardClassifier()
 
     classifier.evaluate_accuracy()
 
-    #c1 = file_name_to_card["2h.png"]
-   # c2 = file_name_to_card["2h_2.png"]
-    #c3 = file_name_to_card["5h.png"]
+    # c1 = file_name_to_card["2h.png"]
+    # c2 = file_name_to_card["2h_2.png"]
+    # c3 = file_name_to_card["5h.png"]
 
-    #display_image_with_contours(c1.card_image, [
-        #c1.number_image,
-        #c2.number_image,
-        #c3.number_image
-    #])
+    # display_image_with_contours(c1.card_image, [
+    # c1.number_image,
+    # c2.number_image,
+    # c3.number_image
+    # ])
 
-    #d1 = diff_images(c1, c2)
-    #d2 = diff_images(c3, c2)
+    # d1 = diff_images(c1, c2)
+    # d2 = diff_images(c3, c2)
 
-    #print(d1)
-    #print(d2)
-    #return
-
-
+    # print(d1)
+    # print(d2)
+    # return
 
     return
 

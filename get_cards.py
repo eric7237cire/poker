@@ -52,77 +52,94 @@ def get_game_area_as_2d_array(screenshot_file_path):
 class NumberReader(object):
 
     def __init__(self):
+        self.training_data = []
+
         self.train_numbers(file_path=os.path.join(cfg.NUMBER_DATA_PATH, 'numbers_1_to_6.png'),
-        hero_numbers=[1, 2, 3, 4, 5, 6])
+                           hero_numbers=[1, 2, 3, 4, 5, 6, -1])
+
+        self.train_numbers(file_path=os.path.join(cfg.NUMBER_DATA_PATH, 'numbers_6_to_0.png'),
+                           hero_numbers=[6, 7, 8, 9, 0, -1])
 
     def train_numbers(self, file_path, hero_numbers):
         image_array = get_game_area_as_2d_array(file_path)
 
-        #display_image_with_contours(image_array, [])
+        # display_image_with_contours(image_array, [])
 
         hero_bet_array = cfg.HERO_BETTING_AREA.clip_2d_array(image_array)
 
-        #display_image_with_contours(hero_bet_array, [])
+        # display_image_with_contours(hero_bet_array, [])
 
         hero_bet_image = Image.fromarray(hero_bet_array)
         hero_bet_grey_image = hero_bet_image.convert('L')
         hero_bet_grey_array = np.array(hero_bet_grey_image)
 
-        contours = find_contours_in_card(grey_array=hero_bet_grey_array,
-                                         min_width=2,
-                                         max_width=14,
-                                         min_height=5,
-                                         max_height=11,
-                                         value_threshold=70
-                                         )
+        contour_list = find_contours_in_card(grey_array=hero_bet_grey_array,
+                                             **cfg.BET_CONTOUR_CONFIG
+                                             )
+        sorted_contours = sorted(contour_list, key=lambda x: x.bounding_box.min_x)
+        # display_image_with_contours(hero_bet_grey_array, [c.points_array for c in contours])
 
-        display_image_with_contours(hero_bet_grey_array, [c.points_array for c in contours])
+        self.training_data.extend(zip(hero_numbers, sorted_contours))
 
+    def get_bets(self, screenshot_file_path):
+        image_array = get_game_area_as_2d_array(screenshot_file_path)
 
-def get_bets(screenshot_file_path):
-    image_array = get_game_area_as_2d_array(screenshot_file_path)
+        bet_image_array = cfg.BETS_AREA.clip_2d_array(image_array)
+        # get just green component
 
-    bet_image_array = cfg.BETS_AREA.clip_2d_array(image_array)
-    # get just green component
+        # display_image_with_contours(bet_image_array, [])
 
-    #display_image_with_contours(bet_image_array, [])
+        image_array = bet_image_array[:, :, 1].copy()
 
-    image_array = bet_image_array[:,:,1].copy()
+        image_array[image_array < 200] = 0
 
-    image_array[image_array < 200] = 0
+        bet_bubbles = find_contours_in_card(grey_array=image_array,
+                                            min_width=30,
+                                            max_width=100,
+                                            min_height=9,
+                                            max_height=15
+                                            )
 
-    contours = find_contours_in_card(grey_array=image_array,
-                                     min_width=30,
-                                     max_width=100,
-                                     min_height=9,
-                                     max_height=15
-                                     )
+        bet_bubbles = list(bet_bubbles)
+        # display_image_with_contours(bet_image_array, [c[0] for c in contours])
 
-    contours = list(contours)
-    #display_image_with_contours(bet_image_array, [c[0] for c in contours])
+        bet_value = 0
 
-    for contour, bounding_box in contours:
+        for contour in bet_bubbles:
+            just_text = contour.bounding_box.clip_2d_array(bet_image_array)
 
-        just_text = bounding_box.clip_2d_array(bet_image_array)
+            just_text_image = Image.fromarray(just_text)
+            grey_scale_text = just_text_image.convert('L')
+            just_text_grey_array = np.array(grey_scale_text)
 
-        just_text_image = Image.fromarray(just_text)
-        grey_scale_text = just_text_image.convert('L')
-        just_text_grey_array = np.array(grey_scale_text)
+            digit_contours = find_contours_in_card(grey_array=just_text_grey_array,
+                                                   **cfg.BET_CONTOUR_CONFIG
+                                                   )
 
-        contours = find_contours_in_card(grey_array=just_text_grey_array,
-                                         min_width=2,
-                                         max_width=12,
-                                         min_height=5,
-                                         max_height=11,
-                                         value_threshold=80
-                                         )
+            digit_contours = sorted(digit_contours, key=lambda x: x.bounding_box.min_x)
 
-        display_image_with_contours(just_text_grey_array, [c[0] for c in contours])
+            numbers_found = []
 
-    pass
+            for digit_contour in digit_contours:
+
+                card_diffs = [diff_polygons(digit_contour, t[1]) for t in self.training_data]
+                idx = np.argmin(card_diffs, axis=0)
+
+                numbers_found.append(self.training_data[idx][0])
+
+            print(f"Numbers found: {numbers_found}")
+
+            this_bet_value = 0
+
+            if numbers_found:
+                this_bet_value = int("".join([str(n) for n in numbers_found if n >= 0]))
+
+            bet_value += this_bet_value
+            #display_image_with_contours(just_text_grey_array, [c.points_array for c in digit_contours])
+
+        return bet_value
 
 def get_hole_cards(screenshot_file_path, card_classifier, game_info):
-
     image_array = get_game_area_as_2d_array(screenshot_file_path)
 
     image_array = cfg.HERO_PLAYER_HOLE_CARDS_LOC.clip_2d_array(image_array)
@@ -139,14 +156,13 @@ def get_hole_cards(screenshot_file_path, card_classifier, game_info):
     ))
 
 
-def extract_game_info_from_screenshot(screenshot_file_path, card_classifier):
+def extract_game_info_from_screenshot(screenshot_file_path, card_classifier, number_reader=None):
     gi = GameInfo()
 
-    number_read = NumberReader()
+    if number_reader is not None:
+        gi.to_call = number_reader.get_bets(screenshot_file_path)
 
-    #get_bets(screenshot_file_path)
-
-    #return
+    # return
 
     get_hole_cards(screenshot_file_path=screenshot_file_path,
                    card_classifier=card_classifier,

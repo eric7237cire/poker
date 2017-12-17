@@ -14,6 +14,7 @@ import logging
 
 from scipy.misc import imresize
 from matplotlib.path import Path
+from card_util import *
 
 logger = logging.getLogger(__name__)
 
@@ -65,13 +66,9 @@ def main2():
     image = Image.open(file_path)
 
 
-class CardContour():
+class CardContour(Contour):
 
     def __init__(self):
-        self.bounding_box = None
-
-        # List of points y,x
-        self.contour = None
         self.grey_array = None
 
 
@@ -96,7 +93,7 @@ def get_suit_and_number(image, has_2_cards=False):
         contour, bounding_box = contour.points_array, contour.bounding_box
         card_contour = CardContour()
         card_contour.bounding_box = bounding_box
-        card_contour.contour = contour
+        card_contour.points_array = contour
         card_contour.grey_array = grey_array
         card_contours.append(card_contour)
 

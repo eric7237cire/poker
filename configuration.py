@@ -2,6 +2,7 @@ import os
 
 from dto import BoundingBox
 
+
 class Config(object):
     EXTRACTED_IMAGES_PATH = os.path.join(os.path.dirname(__file__), 'extracted_images')
     SCREENSHOTS_PATH = os.path.join(os.path.dirname(__file__), 'screenshots')
@@ -18,3 +19,11 @@ class Config(object):
 
     HERO_BETTING_AREA = BoundingBox(min_y=240, max_y=260, min_x=350, max_x=420)
     BETS_AREA = BoundingBox(min_y=75, max_y=325, min_x=100, max_x=650)
+
+    BET_CONTOUR_CONFIG = {
+        "min_width": 2,
+        "max_width": 14,
+        "min_height": 5,
+        "max_height": 11,
+        "value_threshold": 70
+    }

@@ -93,6 +93,8 @@ def find_contours_in_card(
             continue
 
         #print(f"Found contour @ {min_x},{min_y} Width={width} Height={height} Numpoints={len(contour)}")
+        if not np.array_equal(contour[0],contour[-1]):
+            contour = np.append(contour, np.expand_dims(contour[0], axis=0), axis=0)
 
         yield contour
 

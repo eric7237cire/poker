@@ -89,6 +89,10 @@ def get_suit_and_number(image, has_2_cards=False):
     """
     grey_array = card_to_grayscale_2d_array(image)
 
+    if not has_2_cards:
+        # chips can cover up bottom
+        grey_array = grey_array[0:28, :]
+
     card_contours = []
 
     for idx, contour in enumerate(find_contours_in_card(
@@ -103,12 +107,16 @@ def get_suit_and_number(image, has_2_cards=False):
         card_contour.grey_array = grey_array
         card_contours.append(card_contour)
 
-
+    # display_image_with_contours(grey_array, [c.contour for c in card_contours])
 
     sorted_by_x = sorted(card_contours, key=lambda c: c.min_x)
 
     if has_2_cards:
 
+        if len(sorted_by_x) < 4:
+            logger.warning("Not enough images for hole cards")
+            display_image_with_contours(grey_array, [c.contour for c in card_contours])
+            return None
 
         sorted_contours_1 = sorted(sorted_by_x[0:2], key=lambda c: c.min_y)
         sorted_contours_2 = sorted(sorted_by_x[-3:-1], key=lambda c: c.min_y)
@@ -116,6 +124,11 @@ def get_suit_and_number(image, has_2_cards=False):
         # suit, number
         return sorted_contours_1[1], sorted_contours_1[0], sorted_contours_2[1], sorted_contours_2[0]
     else:
+        if len(sorted_by_x) < 2:
+            logger.warning("Not enough images for cards")
+            display_image_with_contours(grey_array, [c.contour for c in card_contours])
+            return None
+
         sorted_by_y = sorted(sorted_by_x[0:2], key=lambda c: c.min_y)
         return sorted_by_y[1], sorted_by_y[0]
 

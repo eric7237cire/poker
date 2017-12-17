@@ -112,6 +112,8 @@ def find_contours(
     # http://scikit-image.org/docs/dev/auto_examples/edges/plot_contours.html?highlight=find_contours
     all_contours = measure.find_contours(grey_array, level=value_threshold, fully_connected=fully_connected)
 
+    # Todo find inner shapes and subtract from polygon
+
     for points_array in all_contours:
 
         b = BoundingBox()

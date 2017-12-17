@@ -46,7 +46,6 @@ def get_hole_cards(screenshot_file_path, card_classifier, game_info):
     left_index = i
 
     image_array = image_array[:, left_index:]
-
   #  show_image(image_array)
 
     image_array = cfg.HERO_PLAYER_HOLE_CARDS_LOC.clip_2d_array(image_array)

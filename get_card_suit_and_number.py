@@ -31,6 +31,11 @@ def main():
     get_suit_and_number(image)
 
 def get_suit_and_number(image):
+    """
+    Takes a PIL.Image
+    :param image:
+    :return:
+    """
     grey_array = card_to_grayscale_2d_array(image)
 
     contours = []

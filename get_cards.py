@@ -14,6 +14,9 @@ from card_util import *
 
 from configuration import Config as cfg
 from get_screenshot import capture_screenshot
+from card_classifier import *
+
+from PIL import Image, ImageDraw
 
 def midpoint(ptA, ptB):
     return ((ptA[0] + ptB[0]) * 0.5, (ptA[1] + ptB[1]) * 0.5)
@@ -21,6 +24,8 @@ def midpoint(ptA, ptB):
 
 
 def main():
+
+    card_classifier = CardClassifier()
 
     try:
         os.makedirs(cfg.SCREENSHOTS_PATH, exist_ok=True)
@@ -33,9 +38,9 @@ def main():
     formatted_time = now.strftime("%Y_%m_%d__%H_%M_%S_%f")
 
     file_path = os.path.join(cfg.SCREENSHOTS_PATH, 'screenshot_{}.png'.format(formatted_time))
-    #capture_screenshot("chrome", output_file_path=file_path)
+    capture_screenshot("chrome", output_file_path=file_path)
 
-    file_path=os.path.join(cfg.SCREENSHOTS_PATH, "screenshot_2017_12_15__19_59_16_686117.png")
+    #file_path=os.path.join(cfg.SCREENSHOTS_PATH, "screenshot_2017_12_15__19_59_16_686117.png")
 
     # load the image, convert it to grayscale, and blur it slightly
     image = cv2.imread(file_path)
@@ -44,6 +49,8 @@ def main():
     cnts = find_contours(bw)
 
     image_copy = image.copy()
+
+    image_array = np.array(image)
 
     # loop over the contours individually
     for idx, contour in enumerate(cnts):
@@ -59,6 +66,8 @@ def main():
         if h < cfg.CARD_HEIGHT_PIXELS -5 or h > cfg.CARD_HEIGHT_PIXELS + 5:
             continue
 
+        crop_img = image_array[y:y + h + 1, x:x + w + 1]
+
         clip_and_save(
             p_orig_image=image_copy,
             x=x,
@@ -67,50 +76,12 @@ def main():
             h=cfg.CARD_HEIGHT_PIXELS,
             file_name=f"sub_image_{idx:04}.png"
         )
-        # compute the rotated bounding box of the contour
 
-        box = cv2.minAreaRect(contour)
-        box = cv2.cv.BoxPoints(box) if imutils.is_cv2() else cv2.boxPoints(box)
-        box = np.array(box, dtype="int")
+        card_image = Image.fromarray(crop_img)
 
-        # order the points in the contour such that they appear
-        # in top-left, top-right, bottom-right, and bottom-left
-        # order, then draw the outline of the rotated bounding
-        # box
-        box = perspective.order_points(box)
-        cv2.drawContours(image_copy, [box.astype("int")], -1, (0, 255, 0), 2)
+        c = card_classifier.evaluate_card(card_image)
 
-        # loop over the original points and draw them
-        for (x, y) in box:
-            cv2.circle(image_copy, (int(x), int(y)), 5, (0, 0, 255), -1)
-
-        # unpack the ordered bounding box, then compute the midpoint
-        # between the top-left and top-right coordinates, followed by
-        # the midpoint between bottom-left and bottom-right coordinates
-        (tl, tr, br, bl) = box
-        (tltrX, tltrY) = midpoint(tl, tr)
-        (blbrX, blbrY) = midpoint(bl, br)
-
-        # compute the midpoint between the top-left and top-right points,
-        # followed by the midpoint between the top-righ and bottom-right
-        (tlblX, tlblY) = midpoint(tl, bl)
-        (trbrX, trbrY) = midpoint(tr, br)
-
-        # draw the midpoints on the image
-        cv2.circle(image_copy, (int(tltrX), int(tltrY)), 5, (255, 0, 0), -1)
-        cv2.circle(image_copy, (int(blbrX), int(blbrY)), 5, (255, 0, 0), -1)
-        cv2.circle(image_copy, (int(tlblX), int(tlblY)), 5, (255, 0, 0), -1)
-        cv2.circle(image_copy, (int(trbrX), int(trbrY)), 5, (255, 0, 0), -1)
-
-        # draw lines between the midpoints
-        cv2.line(image_copy, (int(tltrX), int(tltrY)), (int(blbrX), int(blbrY)),
-                 (255, 0, 255), 2)
-        cv2.line(image_copy, (int(tlblX), int(tlblY)), (int(trbrX), int(trbrY)),
-                 (255, 0, 255), 2)
-
-        # compute the Euclidean distance between the midpoints
-        dA = dist.euclidean((tltrX, tltrY), (blbrX, blbrY))
-        dB = dist.euclidean((tlblX, tlblY), (trbrX, trbrY))
+        print(f"Classified {idx} as {c}")
 
 
 

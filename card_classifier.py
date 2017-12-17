@@ -39,6 +39,9 @@ def diff_2d_array(image1, image2):
 
 def diff_polygons(contour1, contour2):
 
+    if contour1 is None or contour2 is None:
+        return 10000000000000
+
     poly1 = Polygon(get_contour_xy(contour1))
     poly2 = Polygon(get_contour_xy(contour2))
 
@@ -55,60 +58,89 @@ def diff_images(card1, card2):
                          card2.suit_image) + \
            diff_polygons(card1.number_image, card2.number_image)
 
+class CardClassifier():
 
+    def __init__(self):
+        imagePaths = list(paths.list_images(cfg.CARD_DATA_PATH))
+
+        # initialize the raw pixel intensities matrix, the features matrix,
+        # and labels list
+        rawImages = []
+        file_name_to_card = {}
+        features = []
+        labels = []
+        cards = []
+
+        self.test_cards = []
+        self.cards_to_eval = []
+
+        ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'j', 'q', 'k', 'a']
+        suits = ['d', 'c', 's', 'h']
+
+        # loop over the input images
+        for (i, imagePath) in enumerate(imagePaths):
+            image = Image.open(imagePath)
+
+            file_name = os.path.basename(imagePath)
+
+            # File name should be like ac for Ace of clubs or 2d for 2 of diamonds
+            label = ranks.index(file_name[0]) + 13 * suits.index(file_name[1])
+
+            logger.info("Label is {} for file name {}".format(label, file_name))
+
+            card = Card(card_index=label, card_file_name=file_name, card_image=image)
+
+            if file_name[2] == '_':
+                self.cards_to_eval.append(card)
+            else:
+                self.test_cards.append(card)
+
+            card.suit_image, card.number_image = get_suit_and_number(image)
+
+            cards.append(card)
+
+            file_name_to_card[file_name] = card
+
+            # update the raw images, features, and labels matricies,
+            # respectively
+            rawImages.append(image)
+
+            labels.append(label)
+
+            # show an update every 1,000 images
+            # if i > 0 and i % 1000 == 0:
+            logger.info("[INFO] processed {}/{}".format(i, len(imagePaths)))
+
+    def evaluate_card(self, card_image):
+        card = Card(card_index=None, card_file_name=None, card_image=card_image)
+        card.suit_image, card.number_image = get_suit_and_number(card_image)
+
+        if card.number_image is None:
+            return "Could not parse image"
+
+        card_diffs = [diff_images(card, t) for t in self.test_cards]
+
+        # index = np.argmin(card_diffs, axis=0)
+        index = np.argmin(card_diffs, axis=0)
+
+        return self.test_cards[index].card_file_name
+
+
+    def evaluate_accuracy(self):
+        for card in self.cards_to_eval:
+            logger.debug(f"Evaluating {card.card_file_name} / {card.card_index} ")
+
+            card_diffs = [diff_images(card, t) for t in self.test_cards]
+
+            # index = np.argmin(card_diffs, axis=0)
+            index = np.argmin(card_diffs, axis=0)
+
+            print(f"Closest to {test_cards[index].card_file_name}")
 
 def main():
     # grab the list of images that we'll be describing
     print("[INFO] describing images...")
-    imagePaths = list(paths.list_images(cfg.CARD_DATA_PATH))
 
-    # initialize the raw pixel intensities matrix, the features matrix,
-    # and labels list
-    rawImages = []
-    file_name_to_card = {}
-    features = []
-    labels = []
-    cards = []
-
-    test_cards = []
-    cards_to_eval = []
-
-    ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'j', 'q', 'k', 'a']
-    suits = ['d', 'c', 's', 'h']
-
-    # loop over the input images
-    for (i, imagePath) in enumerate(imagePaths):
-        image = Image.open(imagePath)
-
-        file_name = os.path.basename(imagePath)
-
-        # File name should be like ac for Ace of clubs or 2d for 2 of diamonds
-        label = ranks.index(file_name[0]) + 13 * suits.index(file_name[1])
-
-        logger.info("Label is {} for file name {}".format(label, file_name))
-
-        card = Card(card_index=label, card_file_name=file_name, card_image=image)
-
-        if file_name[2] == '_':
-            cards_to_eval.append(card)
-        else:
-            test_cards.append(card)
-
-        card.suit_image, card.number_image = get_suit_and_number(image)
-
-        cards.append(card)
-
-        file_name_to_card[file_name] = card
-
-        # update the raw images, features, and labels matricies,
-        # respectively
-        rawImages.append(image)
-
-        labels.append(label)
-
-        # show an update every 1,000 images
-        # if i > 0 and i % 1000 == 0:
-        logger.info("[INFO] processed {}/{}".format(i, len(imagePaths)))
 
     c1 = file_name_to_card["2h.png"]
     c2 = file_name_to_card["2h_2.png"]
@@ -127,15 +159,7 @@ def main():
     #print(d2)
     #return
 
-    for card in cards_to_eval:
-        logger.debug(f"Evaluating {card.card_file_name} / {card.card_index} ")
 
-        card_diffs = [diff_images(card, t) for t in test_cards]
-
-        #index = np.argmin(card_diffs, axis=0)
-        index = np.argmin(card_diffs, axis=0)
-
-        print(f"Closest to {test_cards[index].card_file_name}")
 
     return
 

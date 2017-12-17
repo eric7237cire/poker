@@ -24,8 +24,11 @@ class Config(object):
     KNN_N_NEIGHBORS = 1
     KNN_N_JOBS = -1
 
-    # min_x, max_x
-    PLAYER_DIMENSIONS = [
-        BoundingBox(min_x=320, max_x=365, min_y=590, max_y=700)
 
-    ]
+    ZYNGA_WINDOW_START_Y = 320
+    ZYNGA_WINDOW_STOP_Y = -8
+    ZYNGA_WINDOW_START_X = 8
+
+    # min_x, max_x
+    HERO_PLAYER_HOLE_CARDS_LOC = BoundingBox(min_x=320, max_x=365, min_y=290, max_y=340)
+

@@ -33,7 +33,25 @@ def get_hole_cards(screenshot_file_path, card_classifier, game_info):
 
     image_array = np.array(image)
 
-    image_array = cfg.PLAYER_DIMENSIONS[0].clip_2d_array(image_array)
+    image_array = image_array[cfg.ZYNGA_WINDOW_START_Y:cfg.ZYNGA_WINDOW_STOP_Y, cfg.ZYNGA_WINDOW_START_X:]
+
+    left_index = 0
+
+    for i in range(0, 300):
+        column_sum = np.sum(image_array[:, i])
+
+        if column_sum > 0:
+            break
+
+    left_index = i
+
+    image_array = image_array[:, left_index:]
+
+  #  show_image(image_array)
+
+    image_array = cfg.HERO_PLAYER_HOLE_CARDS_LOC.clip_2d_array(image_array)
+
+   # show_image(image_array)
 
     cropped_image = Image.fromarray(image_array)
 

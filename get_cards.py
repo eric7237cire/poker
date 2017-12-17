@@ -59,13 +59,13 @@ def extract_cards_from_screenshot(screenshot_file_path, card_classifier):
 
         x, y, w, h = cv2.boundingRect(contour)
 
-        if w < cfg.CARD_WIDTH_PIXELS - 5 or w > cfg.CARD_WIDTH_PIXELS + 5:
+        if w < cfg.CARD_WIDTH_PIXELS - 5 or w > cfg.CARD_WIDTH_PIXELS + 15:
             continue
 
-        if h < cfg.CARD_HEIGHT_PIXELS - 5 or h > cfg.CARD_HEIGHT_PIXELS + 5:
+        if h < cfg.CARD_HEIGHT_PIXELS - 5 or h > cfg.CARD_HEIGHT_PIXELS + 15:
             continue
 
-        crop_img = image_array[y:y + h + 1, x:x + w + 1]
+
 
         clip_and_save(
             p_orig_image=image_copy,
@@ -76,6 +76,8 @@ def extract_cards_from_screenshot(screenshot_file_path, card_classifier):
             file_name=f"sub_image_{idx:04}.png"
         )
 
+        crop_img = image_array[y:y + cfg.CARD_HEIGHT_PIXELS + 1,
+                   x:x + cfg.CARD_WIDTH_PIXELS + 1]
         card_image = Image.fromarray(crop_img)
 
         c = card_classifier.evaluate_card(card_image)
@@ -104,7 +106,7 @@ def main():
     file_path = os.path.join(cfg.SCREENSHOTS_PATH, 'screenshot_{}.png'.format(formatted_time))
     capture_screenshot("chrome", output_file_path=file_path)
 
-    extract_cards_from_screenshot(file_path)
+    extract_cards_from_screenshot(file_path, card_classifier)
 
 
 

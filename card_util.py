@@ -57,7 +57,7 @@ def card_to_grayscale_2d_array(image):
 
     grey_array = np.array(grey_scale)
 
-    grey_array = imresize(arr=grey_array, size=(cfg.CARD_HEIGHT_PIXELS, cfg.CARD_WIDTH_PIXELS))
+    # grey_array = imresize(arr=grey_array, size=(cfg.CARD_HEIGHT_PIXELS, cfg.CARD_WIDTH_PIXELS))
 
     return grey_array
 

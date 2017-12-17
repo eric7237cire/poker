@@ -41,4 +41,16 @@ class TestGetCards(unittest.TestCase):
         self.assertEqual(gi.common_cards[3], card_classifier.get_card_id('k', 'h'))
         self.assertEqual(gi.common_cards[4], card_classifier.get_card_id('7', 'c'))
 
+    def test_get_cards_blocked(self):
+
+        file_path = os.path.join(self.UNIT_TEST_DATA_DIR, 'screenshot_blocked_cards.png')
+        card_classifier = CardClassifier()
+
+        gi = extract_cards_from_screenshot(screenshot_file_path=file_path, card_classifier=card_classifier)
+
+        self.assertEqual(gi.common_cards[0], card_classifier.get_card_id('5','h'), msg=card_classifier.get_card_string(gi.common_cards[0]))
+        self.assertEqual(gi.common_cards[1], card_classifier.get_card_id('j', 'c'))
+        self.assertEqual(gi.common_cards[2], card_classifier.get_card_id('7', 's'))
+        self.assertEqual(gi.common_cards[3], card_classifier.get_card_id('8', 'h'))
+
 

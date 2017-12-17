@@ -37,13 +37,13 @@ def diff_2d_array(image1, image2):
                               np.int16(image2)))
 
 
-def diff_polygons(contour1, contour2):
+def diff_polygons(card_contour1, card_contour2):
 
-    if contour1 is None or contour2 is None:
+    if card_contour1 is None or card_contour2 is None:
         return 10000000000000
 
-    poly1 = Polygon(get_contour_xy(contour1))
-    poly2 = Polygon(get_contour_xy(contour2))
+    poly1 = Polygon(get_contour_xy(card_contour1.contour))
+    poly2 = Polygon(get_contour_xy(card_contour2.contour))
 
     poly1 = translate(poly1, xoff=-poly1.bounds[0], yoff=-poly1.bounds[1])
     poly2 = translate(poly2, xoff=-poly2.bounds[0], yoff=-poly2.bounds[1])
@@ -142,26 +142,28 @@ class CardClassifier():
 
         return self.test_cards[index].card_id
 
-
     def evaluate_accuracy(self):
         for card in self.cards_to_eval:
-            logger.debug(f"Evaluating {card.card_file_name} / {card.card_index} ")
+            logger.debug(f"Evaluating {card.card_file_name} / {card.card_id} ")
 
             card_diffs = [diff_images(card, t) for t in self.test_cards]
 
             # index = np.argmin(card_diffs, axis=0)
             index = np.argmin(card_diffs, axis=0)
 
-            print(f"Closest to {test_cards[index].card_file_name}")
+            print(f"Closest to {self.test_cards[index].card_file_name}")
 
 def main():
     # grab the list of images that we'll be describing
     print("[INFO] describing images...")
 
+    classifier  = CardClassifier()
 
-    c1 = file_name_to_card["2h.png"]
-    c2 = file_name_to_card["2h_2.png"]
-    c3 = file_name_to_card["5h.png"]
+    classifier.evaluate_accuracy()
+
+    #c1 = file_name_to_card["2h.png"]
+   # c2 = file_name_to_card["2h_2.png"]
+    #c3 = file_name_to_card["5h.png"]
 
     #display_image_with_contours(c1.card_image, [
         #c1.number_image,

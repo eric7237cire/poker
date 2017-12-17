@@ -9,7 +9,7 @@ from matplotlib.path import Path
 from scipy.misc import imresize
 from skimage import measure
 import matplotlib.patches as patches
-from configuration import BoundingBox
+from dto import BoundingBox, Contour
 
 def display_cv2_image_with_contours(grey_array, contours):
     # Display the image and plot all contours found
@@ -99,7 +99,9 @@ def find_contours_in_card(
         if not np.array_equal(contour[0],contour[-1]):
             contour = np.append(contour, np.expand_dims(contour[0], axis=0), axis=0)
 
-        yield contour, b
+        c  = Contour()
+        c.points_array, c.bounding_box = contour, b
+        yield c
 
 
 def generate_points_list(width, height):

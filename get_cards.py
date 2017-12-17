@@ -58,11 +58,25 @@ class NumberReader(object):
     def train_numbers(self, file_path, hero_numbers):
         image_array = get_game_area_as_2d_array(file_path)
 
-        display_image_with_contours(image_array, [])
+        #display_image_with_contours(image_array, [])
 
         hero_bet_array = cfg.HERO_BETTING_AREA.clip_2d_array(image_array)
 
-        display_image_with_contours(hero_bet_array, [])
+        #display_image_with_contours(hero_bet_array, [])
+
+        hero_bet_image = Image.fromarray(hero_bet_array)
+        hero_bet_grey_image = hero_bet_image.convert('L')
+        hero_bet_grey_array = np.array(hero_bet_grey_image)
+
+        contours = find_contours_in_card(grey_array=hero_bet_grey_array,
+                                         min_width=2,
+                                         max_width=14,
+                                         min_height=5,
+                                         max_height=11,
+                                         value_threshold=70
+                                         )
+
+        display_image_with_contours(hero_bet_grey_array, [c.points_array for c in contours])
 
 
 def get_bets(screenshot_file_path):
@@ -132,7 +146,7 @@ def extract_game_info_from_screenshot(screenshot_file_path, card_classifier):
 
     #get_bets(screenshot_file_path)
 
-    return
+    #return
 
     get_hole_cards(screenshot_file_path=screenshot_file_path,
                    card_classifier=card_classifier,

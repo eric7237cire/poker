@@ -89,11 +89,11 @@ def get_suit_and_number(image, has_2_cards=False):
 
     card_contours = []
 
-    for idx, tpl in enumerate(find_contours_in_card(
+    for idx, contour in enumerate(find_contours_in_card(
             grey_array=grey_array,
             min_width=5,
             max_width=15)):
-        contour, bounding_box = tpl
+        contour, bounding_box = contour.points_array, contour.bounding_box
         card_contour = CardContour()
         card_contour.bounding_box = bounding_box
         card_contour.contour = contour

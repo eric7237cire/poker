@@ -8,7 +8,33 @@ import numpy as np
 from matplotlib.path import Path
 from scipy.misc import imresize
 from skimage import measure
+import matplotlib.patches as patches
 
+
+def display_cv2_image_with_contours(grey_array, contours):
+    # Display the image and plot all contours found
+    fig, ax = plt.subplots(1)
+
+    if grey_array is not None:
+        ax.imshow(grey_array, interpolation='bicubic', cmap=plt.cm.gray)
+
+    #ax2 = fig.add_subplot(111, aspect='equal')
+    for n, contour in enumerate(contours):
+        x, y, w, h = cv2.boundingRect(contour)
+        ax.add_patch(patches.Rectangle(
+            xy=(x,y),
+            width=w,
+            height=h,
+            fill=False,
+            linewidth=1,
+            edgecolor='g'
+        ))
+
+
+    ax.axis('image')
+    ax.set_xticks([])
+    ax.set_yticks([])
+    plt.show()
 
 def display_image_with_contours(grey_array, contours):
     # Display the image and plot all contours found
@@ -147,6 +173,7 @@ def show_image_and_contour(image, contour):
     """
     fig, ax = plt.subplots()
     ax.plot(contour[:, 1], contour[:, 0], linewidth=2)
+
     ax.imshow(image, interpolation='nearest', cmap=plt.cm.gray)
     ax.axis('image')
     ax.set_xticks([])

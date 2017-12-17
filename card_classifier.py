@@ -62,16 +62,21 @@ class CardClassifier():
     RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', 't', 'j', 'q', 'k', 'a']
     SUITS = ['d', 'c', 's', 'h']
 
+    SUITS_VERBOSE = ['Diamonds', 'Clubs', 'Spades', 'Hearts']
+
     def get_card_id(self,rank, suit):
         # File name should be like ac for Ace of clubs or 2d for 2 of diamonds
         return self.RANKS.index(rank) + 13 * self.SUITS.index(suit)
 
     def get_card_string(self, card_id):
 
+        if not card_id:
+            return None
+
         suit = int(card_id / 13)
         rank = card_id % 13
 
-        return "{} of {}".format(self.RANKS[rank], self.SUITS[suit])
+        return "{} of {}".format(self.RANKS[rank].upper(), self.SUITS_VERBOSE[suit])
 
     def __init__(self):
         imagePaths = list(paths.list_images(cfg.CARD_DATA_PATH))

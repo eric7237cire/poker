@@ -30,12 +30,26 @@ def extract_cards_from_screenshot(screenshot_file_path, card_classifier):
 
     image = cv2.imread(screenshot_file_path)
 
+    image = image[400:600, 275:600]  # Crop from x, y, w, h -> 100, 200, 300, 400
+    # NOTE: its img[y: y + h, x: x + w] and *not* img[x: x + w, y: y + h]
+
+    #cv2.imshow('image', image)
+    #cv2.waitKey(0)
+    #cv2.destroyAllWindows()
+    #display_cv2_image_with_contours(image, [])
+
     bw = get_black_and_white_image(image)
     cnts = find_contours(bw)
 
     image_copy = image.copy()
 
     image_array = np.array(image)
+
+    def get_contour_sort_key(p_contour):
+        x, y, w, h = cv2.boundingRect(p_contour)
+        return x
+
+    cnts = sorted(cnts, key= get_contour_sort_key)
 
     # loop over the contours individually
     for idx, contour in enumerate(cnts):
@@ -66,11 +80,12 @@ def extract_cards_from_screenshot(screenshot_file_path, card_classifier):
 
         c = card_classifier.evaluate_card(card_image)
 
-        print(f"Classified {idx} as {c}")
+        print(f"Classified extracted image #{idx} as {card_classifier.get_card_string(c)}")
 
         if c is not None:
             gi.common_cards.append(c)
 
+    display_cv2_image_with_contours(bw, cnts)
     return gi
 
 def main():
@@ -89,14 +104,8 @@ def main():
     file_path = os.path.join(cfg.SCREENSHOTS_PATH, 'screenshot_{}.png'.format(formatted_time))
     capture_screenshot("chrome", output_file_path=file_path)
 
-    # file_path=os.path.join(cfg.SCREENSHOTS_PATH, "screenshot_2017_12_15__19_59_16_686117.png")
+    extract_cards_from_screenshot(file_path)
 
-    # load the image, convert it to grayscale, and blur it slightly
-
-    # show the output image
-    # cv2.imshow("Image", bw)
-    # cv2.imshow("Image", image_copy)
-    cv2.waitKey(0)
 
 
 if __name__ == '__main__':

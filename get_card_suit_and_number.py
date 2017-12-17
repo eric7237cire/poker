@@ -66,12 +66,6 @@ def main2():
     image = Image.open(file_path)
 
 
-class CardContour(Contour):
-
-    def __init__(self):
-        self.grey_array = None
-
-
 def get_suit_and_number(image, has_2_cards=False):
     """
     Takes a PIL.Image
@@ -86,16 +80,11 @@ def get_suit_and_number(image, has_2_cards=False):
 
     card_contours = []
 
-    for idx, contour in enumerate(find_contours_in_card(
+    for idx, contour in enumerate(find_contours(
             grey_array=grey_array,
             min_width=5,
             max_width=15)):
-        contour, bounding_box = contour.points_array, contour.bounding_box
-        card_contour = CardContour()
-        card_contour.bounding_box = bounding_box
-        card_contour.points_array = contour
-        card_contour.grey_array = grey_array
-        card_contours.append(card_contour)
+        card_contours.append(contour)
 
 
     if has_2_cards:

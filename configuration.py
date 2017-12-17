@@ -15,10 +15,13 @@ class Config(object):
     ZYNGA_WINDOW = BoundingBox(min_x=8, min_y=320, max_y=-78)
 
     # All these locations are after slicing off the ZYNGA_WINDOW
+
     HERO_PLAYER_HOLE_CARDS_LOC = BoundingBox(min_x=320, max_x=365, min_y=290, max_y=340)
 
     HERO_BETTING_AREA = BoundingBox(min_y=240, max_y=260, min_x=350, max_x=420)
     BETS_AREA = BoundingBox(min_y=75, max_y=325, min_x=100, max_x=650)
+
+    STARTING_POT_AREA = BoundingBox(min_x=320, max_x=440, min_y=200, max_y=230)
 
     BET_CONTOUR_CONFIG = {
         "min_width": 2,
@@ -26,4 +29,14 @@ class Config(object):
         "min_height": 5,
         "max_height": 11,
         "value_threshold": 70
+    }
+
+    POT_CONTOUR_CONFIG = {
+        "min_width": 2,
+        "max_width": 14,
+        "min_height": 5,
+        "max_height": 11,
+        "value_threshold": 220,
+        # Works better probably because the digits are higher valued
+        "fully_connected": "high"
     }

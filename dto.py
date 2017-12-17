@@ -1,3 +1,4 @@
+from shapely.geometry import Polygon
 
 class BoundingBox(object):
 
@@ -21,3 +22,18 @@ class Contour(object):
 
         # 2d array in y/x order
         self.points_array = None
+
+        self.polygon = None
+
+    def set_points_array(self, points_array):
+        self.points_array = points_array
+        self.polygon = Polygon(self.get_contour_xy())
+
+    def get_contour_xy(self):
+        """
+        Contours are in y,x
+        :param contour:
+        :return: same points x,y
+        """
+        # https://stackoverflow.com/questions/4857927/swapping-columns-in-a-numpy-array
+        return self.points_array[:, [1, 0]]

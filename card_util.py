@@ -10,6 +10,7 @@ from scipy.misc import imresize
 from skimage import measure
 import matplotlib.patches as patches
 from dto import BoundingBox, Contour
+from PIL import Image, ImageDraw
 
 from shapely.affinity import translate
 import logging
@@ -26,8 +27,8 @@ def diff_polygons(contour_1, contour_2):
     if contour_1 is None or contour_2 is None:
         return 10000000000000
 
-    poly1 = Polygon(get_contour_xy(contour_1.points_array))
-    poly2 = Polygon(get_contour_xy(contour_2.points_array))
+    poly1 = contour_1.polygon
+    poly2 = contour_2.polygon
 
     poly1 = translate(poly1, xoff=-poly1.bounds[0], yoff=-poly1.bounds[1])
     poly2 = translate(poly2, xoff=-poly2.bounds[0], yoff=-poly2.bounds[1])
@@ -36,6 +37,7 @@ def diff_polygons(contour_1, contour_2):
 
     return poly1.area + poly2.area - 2 * intersecting_area
 
+
 def display_cv2_image_with_contours(grey_array, contours):
     # Display the image and plot all contours found
     fig, ax = plt.subplots(1)
@@ -43,11 +45,11 @@ def display_cv2_image_with_contours(grey_array, contours):
     if grey_array is not None:
         ax.imshow(grey_array, interpolation='bicubic', cmap=plt.cm.gray)
 
-    #ax2 = fig.add_subplot(111, aspect='equal')
+    # ax2 = fig.add_subplot(111, aspect='equal')
     for n, contour in enumerate(contours):
         x, y, w, h = cv2.boundingRect(contour)
         ax.add_patch(patches.Rectangle(
-            xy=(x,y),
+            xy=(x, y),
             width=w,
             height=h,
             fill=False,
@@ -55,11 +57,11 @@ def display_cv2_image_with_contours(grey_array, contours):
             edgecolor='g'
         ))
 
-
     ax.axis('image')
     ax.set_xticks([])
     ax.set_yticks([])
     plt.show()
+
 
 def display_image_with_contours(grey_array, contours):
     # Display the image and plot all contours found
@@ -77,6 +79,12 @@ def display_image_with_contours(grey_array, contours):
     plt.show()
 
 
+def rgb_yx_array_to_grayscale(array):
+    image = Image.fromarray(array)
+    grey_image = image.convert('L')
+    return np.array(grey_image)
+
+
 def card_to_grayscale_2d_array(image):
     grey_scale = image.convert('L')
 
@@ -87,29 +95,28 @@ def card_to_grayscale_2d_array(image):
     return grey_array
 
 
-def find_contours_in_card(
+def find_contours(
         grey_array, min_width=5, max_width=15,
-        min_height=5, max_height = 100,
-        value_threshold=150
+        min_height=5, max_height=100,
+        value_threshold=150,
+        fully_connected="low"
 ):
     """
 
-    :param image: PIL image
-    :return:  iterable of contours in card, matching the
-    number and symbol
+    :return:  iterable of contours in card
     """
 
     # grey_array[grey_array < 150] = 0
     # grey_array[grey_array >= 150] = 255
 
     # http://scikit-image.org/docs/dev/auto_examples/edges/plot_contours.html?highlight=find_contours
-    all_contours = measure.find_contours(grey_array, value_threshold)
+    all_contours = measure.find_contours(grey_array, level=value_threshold, fully_connected=fully_connected)
 
-    for contour in all_contours:
+    for points_array in all_contours:
 
         b = BoundingBox()
-        b.min_y, b.min_x = np.min(contour, axis=0)
-        b.max_y, b.max_x = np.max(contour, axis=0)
+        b.min_y, b.min_x = np.min(points_array, axis=0)
+        b.max_y, b.max_x = np.max(points_array, axis=0)
 
         width = b.max_x - b.min_x
         height = b.max_y - b.min_y
@@ -120,12 +127,14 @@ def find_contours_in_card(
         if height < min_height or height > max_height:
             continue
 
-        #print(f"Found contour @ {min_x},{min_y} Width={width} Height={height} Numpoints={len(contour)}")
-        if not np.array_equal(contour[0],contour[-1]):
-            contour = np.append(contour, np.expand_dims(contour[0], axis=0), axis=0)
+        # print(f"Found contour @ {min_x},{min_y} Width={width} Height={height} Numpoints={len(contour)}")
+        if not np.array_equal(points_array[0], points_array[-1]):
+            points_array = np.append(points_array, np.expand_dims(points_array[0], axis=0), axis=0)
 
-        c  = Contour()
-        c.points_array, c.bounding_box = contour, b
+        c = Contour()
+        c.bounding_box = b
+        c.set_points_array(points_array)
+
         yield c
 
 
@@ -143,15 +152,7 @@ def generate_points_list(width, height):
     return points
 
 
-def get_contour_xy(contour):
-    """
-    Contours are in y,x
-    :param contour:
-    :return: same points x,y
-    """
-    # https://stackoverflow.com/questions/4857927/swapping-columns-in-a-numpy-array
-    contour_xy = contour[:, [1, 0]]
-    return contour_xy
+
 
 
 def extract_polygon_mask_from_contour(contour, width, height, all_grid_points_list):
@@ -218,7 +219,7 @@ def show_image_and_contour(image, contour):
     plt.show()
 
 
-def find_contours(image):
+def find_contours_with_cv(image):
     cnts = cv2.findContours(image, cv2.RETR_EXTERNAL,
                             cv2.CHAIN_APPROX_SIMPLE)
     cnts = cnts[0] if imutils.is_cv2() else cnts[1]

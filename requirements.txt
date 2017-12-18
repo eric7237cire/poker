@@ -5,3 +5,4 @@ Shapely==1.6.2
 scipy
 imutils
 opencv-python
+scikit-image

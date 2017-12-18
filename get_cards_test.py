@@ -29,6 +29,17 @@ class TestGetCards(unittest.TestCase):
         self.longMessage = True
         self.UNIT_TEST_DATA_DIR = os.path.join(os.path.dirname(__file__), 'unit_test_data')
 
+        root = logging.getLogger()
+        root.setLevel(logging.DEBUG)
+
+        ch = logging.StreamHandler(sys.stdout)
+        ch.setLevel(logging.DEBUG)
+        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        ch.setFormatter(formatter)
+        root.addHandler(ch)
+
+        logging.getLogger("PIL.PngImagePlugin").setLevel(logging.INFO)
+
     def test_get_cards(self):
         file_path = os.path.join(self.UNIT_TEST_DATA_DIR, 'screenshot_5cards_1.png')
         card_classifier = CardClassifier()

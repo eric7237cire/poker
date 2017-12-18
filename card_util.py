@@ -18,7 +18,7 @@ import sys
 from shapely.geometry import Polygon
 
 
-def diff_polygons(contour_1, contour_2):
+def diff_polygons(contour_1, contour_2, scale_polygons=True):
     """
 
     :return: Total of non intersecting area
@@ -38,7 +38,8 @@ def diff_polygons(contour_1, contour_2):
     height1 = maxy1 - miny1
     height2 = maxy2 - miny2
 
-    poly2 = scale( geom=poly2, xfact=width1 / width2, yfact= height1 / height2, origin='centroid')
+    if scale_polygons:
+        poly2 = scale( geom=poly2, xfact=width1 / width2, yfact= height1 / height2, origin='centroid')
 
     poly1 = translate(poly1, xoff=-poly1.bounds[0], yoff=-poly1.bounds[1])
     poly2 = translate(poly2, xoff=-poly2.bounds[0], yoff=-poly2.bounds[1])
@@ -248,36 +249,6 @@ def extract_image_with_mask(image, boolean_mask, background_color):
     r_image[np.logical_not(boolean_mask)] = background_color
 
     return r_image
-
-
-def show_image(image):
-    """
-
-    :param image: 2d array, first dimension y
-    :return:
-    """
-    fig, ax = plt.subplots()
-    ax.imshow(image, interpolation='nearest', cmap=plt.cm.gray)
-    ax.axis('image')
-    ax.set_xticks([])
-    ax.set_yticks([])
-    plt.show()
-
-
-def show_image_and_contour(image, contour):
-    """
-
-    :param image: 2d array, first dimension y
-    :return:
-    """
-    fig, ax = plt.subplots()
-    ax.plot(contour[:, 1], contour[:, 0], linewidth=2)
-
-    ax.imshow(image, interpolation='nearest', cmap=plt.cm.gray)
-    ax.axis('image')
-    ax.set_xticks([])
-    ax.set_yticks([])
-    plt.show()
 
 
 def find_contours_with_cv(image):

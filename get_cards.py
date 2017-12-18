@@ -122,7 +122,7 @@ def extract_game_info_from_screenshot(screenshot_file_path, card_classifier, num
 
         c = card_classifier.evaluate_card(card_image)
 
-        print(f"Classified extracted image #{idx} as {card_classifier.get_card_string(c)}")
+        logger.info(f"Classified extracted image #{idx} as {card_classifier.get_card_string(c)}")
 
         if c is not None:
             gi.common_cards.append(c)

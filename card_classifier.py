@@ -27,6 +27,7 @@ class Card(object):
         self.card_file_name = card_file_name
         self.card_image = card_image
 
+        # Contour objects
         self.suit_image = None
         self.number_image = None
 
@@ -39,10 +40,10 @@ def diff_2d_array(image1, image2):
                               np.int16(image2)))
 
 
-def diff_images(card1, card2):
+def diff_images(card1, card2, scale_polygons=True):
     return diff_polygons(card1.suit_image,
-                         card2.suit_image) + \
-           diff_polygons(card1.number_image, card2.number_image)
+                         card2.suit_image, scale_polygons=scale_polygons) + \
+           diff_polygons(card1.number_image, card2.number_image, scale_polygons=scale_polygons)
 
 
 class CardClassifier(object):
@@ -64,6 +65,16 @@ class CardClassifier(object):
         rank = card_id % 13
 
         return "{} of {}".format(self.RANKS[rank].upper(), self.SUITS_VERBOSE[suit])
+
+    def get_test_card(self, rank, suit):
+
+        card_id = self.get_card_id(rank, suit)
+
+        for card in self.test_cards:
+            if card.card_id == card_id:
+                return card
+
+        return None
 
     def __init__(self):
         image_paths = list(paths.list_images(cfg.CARD_DATA_PATH))
@@ -97,7 +108,7 @@ class CardClassifier(object):
             else:
                 self.test_cards.append(card)
 
-            card.suit_image, card.number_image = get_suit_and_number(image)
+            card.suit_image, card.number_image = get_suit_and_number(image, clip_bottom=False)
 
             cards.append(card)
 
@@ -121,17 +132,24 @@ class CardClassifier(object):
         card1.suit_image, card1.number_image, card2.suit_image, card2.number_image = \
             get_suit_and_number(hole_card_image, has_2_cards=True)
 
-        display_image_with_contours(np.array(hole_card_image), [card2.number_image.points_array, card2.suit_image.points_array])
+        c1 = self.get_test_card('t', 's')
+        c2 = self.get_test_card('t', 'h')
+
+        if False:
+            display_image_with_contours(np.array(hole_card_image), [
+                card2.number_image.points_array, card2.suit_image.points_array,
+                c1.suit_image.points_array, c2.suit_image.points_array
+            ])
 
         return self.evaluate_suit_and_number_images(card1), self.evaluate_suit_and_number_images(card2)
 
-    def evaluate_card(self, card_image):
+    def evaluate_card(self, card_image, display=False):
         card = Card(card_index=None, card_file_name=None, card_image=card_image)
         card.suit_image, card.number_image = get_suit_and_number(card_image)
 
-        if False:
-            display_image_with_contours(card.suit_image.grey_array, [card.suit_image.contour,
-                                                                     card.number_image.contour])
+        if display:
+            display_image_with_contours(np.array(card_image), [card.suit_image.points_array,
+                                                                     card.number_image.points_array])
 
         return self.evaluate_suit_and_number_images(card)
 
@@ -140,7 +158,7 @@ class CardClassifier(object):
         if card.number_image is None:
             return None
 
-        card_diffs = [diff_images(card, t) for t in self.test_cards]
+        card_diffs = [diff_images(card, t, scale_polygons=False) for t in self.test_cards]
 
         # index = np.argmin(card_diffs, axis=0)
         index = np.argmin(card_diffs, axis=0)

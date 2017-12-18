@@ -66,7 +66,7 @@ def main2():
     image = Image.open(file_path)
 
 
-def get_suit_and_number(image, has_2_cards=False):
+def get_suit_and_number(image, has_2_cards=False, clip_bottom=True):
     """
     Takes a PIL.Image
     :param image:
@@ -74,7 +74,7 @@ def get_suit_and_number(image, has_2_cards=False):
     """
     grey_array = card_to_grayscale_2d_array(image)
 
-    if not has_2_cards:
+    if not has_2_cards and clip_bottom:
         # chips can cover up bottom
         grey_array = grey_array[0:28, :]
 
@@ -86,8 +86,10 @@ def get_suit_and_number(image, has_2_cards=False):
             max_width=15)):
         card_contours.append(contour)
 
+    #display_image_with_contours(grey_array, [c.points_array for c in card_contours])
+
     if has_2_cards:
-        #display_image_with_contours(grey_array, [c.points_array for c in card_contours])
+        #
         pass
 
     sorted_by_x = sorted(card_contours, key=lambda c: c.bounding_box.min_x)
@@ -100,9 +102,9 @@ def get_suit_and_number(image, has_2_cards=False):
             return None, None, None, None
 
         sorted_contours_1 = sorted(sorted_by_x[0:2], key=lambda c: c.bounding_box.min_y)
-        sorted_contours_2 = sorted(sorted_by_x[-3:-1], key=lambda c: c.bounding_box.min_y)
+        sorted_contours_2 = sorted(sorted_by_x[-2:], key=lambda c: c.bounding_box.min_y)
 
-        display_image_with_contours(grey_array, [c.points_array for c in sorted_by_x[3:5]])
+        #display_image_with_contours(grey_array, [c.points_array for c in sorted_by_x[3:5]])
 
         # suit, number
         return sorted_contours_1[1], sorted_contours_1[0], sorted_contours_2[1], sorted_contours_2[0]

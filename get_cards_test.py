@@ -25,10 +25,8 @@ from number_reader import *
 
 class TestGetCards(unittest.TestCase):
 
-    def setUp(self):
-        self.longMessage = True
-        self.UNIT_TEST_DATA_DIR = os.path.join(os.path.dirname(__file__), 'unit_test_data')
-
+    @classmethod
+    def setUpClass(cls):
         root = logging.getLogger()
         root.setLevel(logging.DEBUG)
 
@@ -39,6 +37,12 @@ class TestGetCards(unittest.TestCase):
         root.addHandler(ch)
 
         logging.getLogger("PIL.PngImagePlugin").setLevel(logging.INFO)
+
+    def setUp(self):
+        self.longMessage = True
+        self.UNIT_TEST_DATA_DIR = os.path.join(os.path.dirname(__file__), 'unit_test_data')
+
+
 
     def test_get_cards(self):
         file_path = os.path.join(self.UNIT_TEST_DATA_DIR, 'screenshot_5cards_1.png')

@@ -7,10 +7,10 @@ cache:
 python:
   - 3.6
 
-before_install:
- - sudo apt-get update
- - sudo apt-get install python-opencv
- - sudo dpkg -L python-opencv
+#before_install:
+# - sudo apt-get update
+# - sudo apt-get install python-opencv
+# - sudo dpkg -L python-opencv
 
 install:
   - pip install -r requirements.txt

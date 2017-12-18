@@ -1,21 +1,8 @@
 # import the necessary packages
-from sklearn.neighbors import KNeighborsClassifier
-from sklearn.model_selection import train_test_split
 from imutils import paths
-import numpy as np
-import argparse
-import imutils
-import cv2
-import os
-from configuration import Config as cfg
-from PIL import Image, ImageDraw
-from shapely.affinity import translate
-from get_card_suit_and_number import get_suit_and_number
-import logging
-import sys
 
 from card_util import *
-from shapely.geometry import Polygon
+from get_card_suit_and_number import get_suit_and_number
 
 logger = logging.getLogger(__name__)
 

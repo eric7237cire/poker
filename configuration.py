@@ -16,7 +16,7 @@ class Config(object):
 
     # All these locations are after slicing off the ZYNGA_WINDOW
 
-    HERO_PLAYER_HOLE_CARDS_LOC = BoundingBox(min_x=320, max_x=365, min_y=290, max_y=340)
+    HERO_PLAYER_HOLE_CARDS_LOC = BoundingBox(min_x=320, max_x=360, min_y=290, max_y=340)
 
     HERO_BETTING_AREA = BoundingBox(min_y=240, max_y=260, min_x=350, max_x=420)
     BETS_AREA = BoundingBox(min_y=75, max_y=325, min_x=100, max_x=650)

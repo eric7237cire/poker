@@ -86,9 +86,8 @@ def get_suit_and_number(image, has_2_cards=False):
             max_width=15)):
         card_contours.append(contour)
 
-
     if has_2_cards:
-        #display_image_with_contours(grey_array, [c.contour for c in card_contours])
+        display_image_with_contours(grey_array, [c.points_array for c in card_contours])
         pass
 
     sorted_by_x = sorted(card_contours, key=lambda c: c.bounding_box.min_x)

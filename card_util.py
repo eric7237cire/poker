@@ -12,7 +12,7 @@ import matplotlib.patches as patches
 from dto import BoundingBox, Contour
 from PIL import Image, ImageDraw
 
-from shapely.affinity import translate
+from shapely.affinity import translate, scale
 import logging
 import sys
 from shapely.geometry import Polygon
@@ -29,6 +29,16 @@ def diff_polygons(contour_1, contour_2):
 
     poly1 = contour_1.polygon
     poly2 = contour_2.polygon
+
+    minx1, miny1, maxx1, maxy1 = poly1.bounds
+    minx2, miny2, maxx2, maxy2 = poly2.bounds
+
+    width1 = maxx1 - minx1
+    width2 = maxx2 - minx2
+    height1 = maxy1 - miny1
+    height2 = maxy2 - miny2
+
+    poly2 = scale( geom=poly2, xfact=width1 / width2, yfact= height1 / height2, origin='centroid')
 
     poly1 = translate(poly1, xoff=-poly1.bounds[0], yoff=-poly1.bounds[1])
     poly2 = translate(poly2, xoff=-poly2.bounds[0], yoff=-poly2.bounds[1])
@@ -95,11 +105,35 @@ def card_to_grayscale_2d_array(image):
     return grey_array
 
 
+
+def get_game_area_as_2d_array(screenshot_file_path):
+    image = Image.open(screenshot_file_path)
+
+    image_array = np.array(image)
+
+    image_array = image_array[cfg.ZYNGA_WINDOW.min_y:cfg.ZYNGA_WINDOW.max_y,
+                  cfg.ZYNGA_WINDOW.min_x:]
+
+    left_index = 0
+
+    for i in range(0, 300):
+        column_sum = np.sum(image_array[:, i])
+
+        if column_sum > 0:
+            break
+
+    left_index = i
+
+    image_array = image_array[:, left_index:]
+
+    return image_array
+
 def find_contours(
         grey_array, min_width=5, max_width=15,
         min_height=5, max_height=100,
         value_threshold=150,
-        fully_connected="low"
+        fully_connected="low",
+        display=False
 ):
     """
 
@@ -113,6 +147,7 @@ def find_contours(
     all_contours = measure.find_contours(grey_array, level=value_threshold, fully_connected=fully_connected)
 
     # Todo find inner shapes and subtract from polygon
+    contour_list = []
 
     for points_array in all_contours:
 
@@ -120,8 +155,28 @@ def find_contours(
         b.min_y, b.min_x = np.min(points_array, axis=0)
         b.max_y, b.max_x = np.max(points_array, axis=0)
 
-        width = b.max_x - b.min_x
-        height = b.max_y - b.min_y
+        c = Contour()
+        c.bounding_box = b
+
+        if not np.array_equal(points_array[0], points_array[-1]):
+            points_array = np.append(points_array, np.expand_dims(points_array[0], axis=0), axis=0)
+
+        c.set_points_array(points_array)
+
+        contour_list.append(c)
+
+    contour_list = sorted(contour_list, key=lambda x: x.bounding_box.min_x)
+
+    if display:
+        display_image_with_contours(grey_array, [c.points_array for c in contour_list])
+
+    for idx, c in enumerate(contour_list):
+
+        if c is None:
+            continue
+
+        width = c.bounding_box.max_x - c.bounding_box.min_x
+        height = c.bounding_box.max_y - c.bounding_box.min_y
 
         if width < min_width or width > max_width:
             continue
@@ -130,12 +185,16 @@ def find_contours(
             continue
 
         # print(f"Found contour @ {min_x},{min_y} Width={width} Height={height} Numpoints={len(contour)}")
-        if not np.array_equal(points_array[0], points_array[-1]):
-            points_array = np.append(points_array, np.expand_dims(points_array[0], axis=0), axis=0)
 
-        c = Contour()
-        c.bounding_box = b
-        c.set_points_array(points_array)
+        # See if any additional contours fit 100% inside
+        for idx2 in range(idx+1, len(contour_list)):
+            c2 = contour_list[idx2]
+            if c.polygon.contains(c2.polygon):
+                c.polygon = c.polygon.difference(c2.polygon)
+                # don't return it in future runs
+                contour_list[idx2] = None
+            else:
+                break
 
         yield c
 

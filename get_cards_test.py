@@ -20,6 +20,8 @@ from card_classifier import *
 from PIL import Image, ImageDraw
 from get_cards import *
 
+from number_reader import *
+
 
 class TestGetCards(unittest.TestCase):
 

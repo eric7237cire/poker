@@ -43,7 +43,7 @@ def get_hole_cards(game_area_image_array, card_classifier, game_info):
 
     game_info.hole_cards = card_classifier.evaluate_hole_card_image(cropped_image)
 
-    print("Found hole card {} and {}".format(
+    logger.debug("Found hole card {} and {}".format(
         card_classifier.get_card_string(game_info.hole_cards[0]),
         card_classifier.get_card_string(game_info.hole_cards[1])
     ))

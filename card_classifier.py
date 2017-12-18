@@ -118,10 +118,10 @@ class CardClassifier(object):
         card1 = Card(card_index=None, card_file_name=None, card_image=hole_card_image)
         card2 = Card(card_index=None, card_file_name=None, card_image=hole_card_image)
 
-        # display_image_with_contours(np.array(hole_card_image), [])
-
         card1.suit_image, card1.number_image, card2.suit_image, card2.number_image = \
             get_suit_and_number(hole_card_image, has_2_cards=True)
+
+        display_image_with_contours(np.array(hole_card_image), [card2.number_image.points_array, card2.suit_image.points_array])
 
         return self.evaluate_suit_and_number_images(card1), self.evaluate_suit_and_number_images(card2)
 

@@ -1,12 +1,15 @@
 language: python
 
-cache: pip
+cache:
+  pip: true
+  apt: true
 
 python:
-    - 3.6
+  - 3.6
 
 install:
-    - pip install -r requirements.txt
+  - sudo apt-get install python-opencv
+  - pip install -r requirements.txt
 
 script:
-    - nosetests .
+  - nosetests .

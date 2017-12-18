@@ -4,4 +4,3 @@ Pillow==4.2.1
 Shapely==1.6.2
 scipy
 imutils
-cv2

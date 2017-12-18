@@ -1,19 +1,3 @@
-import matplotlib.pyplot as plt
-
-from skimage.feature import hog
-from skimage import data, exposure
-from skimage import measure
-import os
-import cv2
-from configuration import Config as cfg
-from PIL import Image
-import numpy as np
-from card_util import *
-from PIL import Image, ImageDraw
-import logging
-
-from scipy.misc import imresize
-from matplotlib.path import Path
 from card_util import *
 
 logger = logging.getLogger(__name__)

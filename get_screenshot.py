@@ -2,8 +2,7 @@ import os
 
 if os.name == 'nt':
     from PIL import ImageGrab
-import win32gui
-from PIL import Image, ImageDraw
+    import win32gui
 
 toplist, winlist = [], []
 

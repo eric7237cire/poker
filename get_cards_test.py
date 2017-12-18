@@ -1,25 +1,6 @@
 import unittest
-import os
-from scipy.spatial import distance as dist
-from imutils import perspective
-from imutils import contours
-import numpy as np
-import argparse
-import shutil
-import imutils
-import cv2
-import sys
-import os
-from datetime import datetime
-from card_util import *
 
-from configuration import Config as cfg
-from get_screenshot import capture_screenshot
-from card_classifier import *
-
-from PIL import Image, ImageDraw
 from get_cards import *
-
 from number_reader import *
 
 

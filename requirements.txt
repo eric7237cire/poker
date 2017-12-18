@@ -2,7 +2,7 @@ matplotlib==2.1.0
 numpy==1.13.3
 Pillow==4.2.1
 Shapely==1.6.2
-scipy
-imutils
-opencv-python
-scikit-image
+scipy==1.0.0
+imutils==0.4.4
+opencv-python==3.3.0
+scikit-image==0.13.1

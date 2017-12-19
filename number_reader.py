@@ -129,7 +129,7 @@ class NumberReader(object):
             center_bet_yx[1] -= center_bet_area_yx[1]
 
             player_position = None
-            if abs(center_bet_yx[0]) < 15 and abs(center_bet_yx[1]) < 75:
+            if abs(center_bet_yx[0]) < 75 and abs(center_bet_yx[1]) < 15:
                 player_position = 0
             elif center_bet_yx[0] > 0 and center_bet_yx[1] < 0:
                 player_position = 1

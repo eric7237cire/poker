@@ -199,14 +199,22 @@ def find_contours(
 
         # print(f"Found contour @ {min_x},{min_y} Width={width} Height={height} Numpoints={len(contour)}")
 
+        if display:
+            #display_image_with_contours(grey_array, [c.points_array ])
+            pass
+
         # See if any additional contours fit 100% inside
         for idx2 in range(idx+1, len(contour_list)):
             c2 = contour_list[idx2]
+
+            if c2 is None:
+                continue
+
             if c.polygon.contains(c2.polygon):
                 c.polygon = c.polygon.difference(c2.polygon)
                 # don't return it in future runs
                 contour_list[idx2] = None
-            else:
+            elif c2.bounding_box.min_x > c.bounding_box.max_x:
                 break
 
         yield c

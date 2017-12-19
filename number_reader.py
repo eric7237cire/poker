@@ -63,7 +63,6 @@ class NumberReader(object):
     def get_starting_pot(self, game_area_image_array):
 
         pot_image_array = cfg.STARTING_POT_AREA.clip_2d_array(game_area_image_array)
-        # get just green component
 
         pot_image_grey_array = rgb_yx_array_to_grayscale(pot_image_array)
 
@@ -74,9 +73,10 @@ class NumberReader(object):
                                        )
 
         digit_contours = list(digit_contours)
-        starting_pot_value = self._digit_contours_to_integer(digit_contours)
 
         # display_image_with_contours(pot_image_grey_array, [c.points_array for c in digit_contours])
+
+        starting_pot_value = self._digit_contours_to_integer(digit_contours)
 
         # display_image_with_contours(pot_image_grey_array, [digit_contours[2].points_array] +
         #

@@ -51,7 +51,7 @@ class NumberReader(object):
 
             numbers_found.append(self.training_data[idx][0])
 
-        print(f"Numbers found: {numbers_found}")
+        logger.debug(f"Numbers found: {numbers_found}")
 
         this_bet_value = None
 
@@ -129,7 +129,7 @@ class NumberReader(object):
             center_bet_yx[1] -= center_bet_area_yx[1]
 
             player_position = None
-            if abs(center_bet_yx[0]) < 15:
+            if abs(center_bet_yx[0]) < 15 and abs(center_bet_yx[1]) < 75:
                 player_position = 0
             elif center_bet_yx[0] > 0 and center_bet_yx[1] < 0:
                 player_position = 1
@@ -156,7 +156,10 @@ class NumberReader(object):
 
             if this_bet_value is not None:
                 logger.info(
-                    "Found bet {}.  Bet area center {}.  Bet center {} ".format(this_bet_value, center_bet_area_yx,
+                    "Found bet {}.  Players position: {} Bet area center: {}.  Bet center: {} ".format(
+                        this_bet_value,
+                        player_position,
+                        center_bet_area_yx,
                                                                                 center_bet_yx))
                 # display_image_with_contours(just_text_grey_array, [c.points_array for c in digit_contours])
                 all_bets[player_position] = this_bet_value

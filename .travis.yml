@@ -17,3 +17,6 @@ install:
 
 script:
   - nosetests .
+
+notifications:
+  email: false

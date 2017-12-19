@@ -34,7 +34,11 @@ class Contour(object):
 
     def set_points_array(self, points_array):
         self.points_array = points_array
-        self.polygon = Polygon(self.get_contour_xy())
+
+        if len(self.points_array) >= 4:
+            self.polygon = Polygon(self.get_contour_xy())
+        else:
+            self.polygon = None
 
     def get_contour_xy(self):
         """

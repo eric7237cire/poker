@@ -210,7 +210,7 @@ def find_contours(
             if c2 is None:
                 continue
 
-            if c.polygon.contains(c2.polygon):
+            if c2.polygon is not None and c.polygon.contains(c2.polygon):
                 c.polygon = c.polygon.difference(c2.polygon)
                 # don't return it in future runs
                 contour_list[idx2] = None

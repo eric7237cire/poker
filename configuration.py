@@ -8,6 +8,7 @@ class Config(object):
     SCREENSHOTS_PATH = os.path.join(os.path.dirname(__file__), 'screenshots')
     CARD_DATA_PATH = os.path.join(os.path.dirname(__file__), 'card_data')
     NUMBER_DATA_PATH = os.path.join(os.path.dirname(__file__), 'number_data')
+    UNIT_TEST_DATA_DIR = os.path.join(os.path.dirname(__file__), 'unit_test_data')
 
     CARD_WIDTH_PIXELS = 35
     CARD_HEIGHT_PIXELS = 50

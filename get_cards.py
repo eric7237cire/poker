@@ -5,6 +5,7 @@ from PIL import Image
 
 from card_classifier import *
 from get_screenshot import capture_screenshot
+from number_reader import NumberReader
 
 
 class GameInfo(object):
@@ -17,15 +18,10 @@ class GameInfo(object):
         self.to_call = None
 
 
-
-
-
-
 def get_hole_cards(game_area_image_array, card_classifier, game_info):
-
     image_array = cfg.HERO_PLAYER_HOLE_CARDS_LOC.clip_2d_array(game_area_image_array)
 
-    #show_image(image_array)
+    # show_image(image_array)
 
     cropped_image = Image.fromarray(image_array)
 
@@ -48,7 +44,7 @@ def extract_game_info_from_screenshot(screenshot_file_path, card_classifier, num
         gi.to_call = 0
 
         if len(bets) > 0:
-            gi.to_call= bets[-1]
+            gi.to_call = bets[-1]
 
         gi.pot_starting = number_reader.get_starting_pot(game_area_image_array.copy())
 
@@ -121,6 +117,7 @@ def extract_game_info_from_screenshot(screenshot_file_path, card_classifier, num
 
 def main():
     card_classifier = CardClassifier()
+    number_reader = NumberReader()
 
     try:
         os.makedirs(cfg.SCREENSHOTS_PATH, exist_ok=True)
@@ -137,7 +134,9 @@ def main():
 
     # file_path = r"E:\git\poker\screenshots\screenshot_2017_12_17__14_54_05_754106.png"
 
-    extract_game_info_from_screenshot(file_path, card_classifier)
+    file_path = os.path.join(cfg.UNIT_TEST_DATA_DIR, 'bet2.png')
+
+    extract_game_info_from_screenshot(file_path, card_classifier, number_reader)
 
 
 if __name__ == '__main__':

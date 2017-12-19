@@ -23,14 +23,14 @@ class NumberReader(object):
 
         hero_bet_grey_array = rgb_yx_array_to_grayscale(hero_bet_array)
 
-        hero_bet_grey_array[hero_bet_grey_array >= 121]  = 255
+        hero_bet_grey_array[hero_bet_grey_array >= 121] = 255
 
         contour_list = find_contours(grey_array=hero_bet_grey_array,
                                      **cfg.BET_CONTOUR_CONFIG
                                      )
         sorted_contours = sorted(contour_list, key=lambda x: x.bounding_box.min_x)
 
-        #display_image_with_contours(hero_bet_grey_array, [c.points_array for c in sorted_contours])
+        # display_image_with_contours(hero_bet_grey_array, [c.points_array for c in sorted_contours])
 
         self.training_data.extend(zip(hero_numbers, sorted_contours))
 
@@ -42,7 +42,7 @@ class NumberReader(object):
 
         for digit_index, digit_contour in enumerate(digit_contours):
 
-            if digit_index > 0 and digit_contours[digit_index-1].polygon.contains(digit_contour.polygon):
+            if digit_index > 0 and digit_contours[digit_index - 1].polygon.contains(digit_contour.polygon):
                 # Catch inner circle of 0s
                 continue
 
@@ -78,7 +78,7 @@ class NumberReader(object):
 
         # display_image_with_contours(pot_image_grey_array, [c.points_array for c in digit_contours])
 
-        #display_image_with_contours(pot_image_grey_array, [digit_contours[2].points_array] +
+        # display_image_with_contours(pot_image_grey_array, [digit_contours[2].points_array] +
         #
         #                                                    [x[1].points_array for x in self.training_data if x[0] in [9,0]])
 
@@ -86,8 +86,8 @@ class NumberReader(object):
 
     def get_bets(self, game_area_image_array):
 
-
         bet_image_array = cfg.BETS_AREA.clip_2d_array(game_area_image_array)
+        # display_image_with_contours(bet_image_array, [])
         # get just green component
 
         # display_image_with_contours(bet_image_array, [])
@@ -95,42 +95,59 @@ class NumberReader(object):
         # Basically we just want green things, so...
 
         # take max of red and blue columns (indexs 0 and 2)
-        max_red_blue_value = np.max( bet_image_array[:, :, [0,2]], axis=2 )
+        max_red_blue_value = np.max(bet_image_array[:, :, [0, 2]], axis=2)
 
         # build a boolean array of green values that are less than the max of red or blue
-        cond = bet_image_array[:,:,1] < max_red_blue_value
+        cond = bet_image_array[:, :, 1] < max_red_blue_value
 
         # for those pixels where green not the max, set it to 0, otherwise subtract the max
-        bet_image_array[:, :, 1] = np.where(cond, 0, bet_image_array[:,:,1]-max_red_blue_value)
+        bet_image_array[:, :, 1] = np.where(cond, 0, bet_image_array[:, :, 1] - max_red_blue_value)
 
         # now we just have a picture of green things
         image_array = bet_image_array[:, :, 1].copy()
-
-        #display_image_with_contours(image_array, [])
 
         bet_bubbles = find_contours(grey_array=image_array,
                                     min_width=30,
                                     max_width=100,
                                     min_height=9,
                                     max_height=15,
-                                    #display=True
+                                    # display=True
                                     )
 
         bet_bubbles = sorted(bet_bubbles, key=lambda x: x.bounding_box.min_x)
-        # display_image_with_contours(bet_image_array, [c[0] for c in contours])
 
-        all_bets = []
+        all_bets = [0] * 5
+
+        center_bet_area_yx = bet_image_array.shape[0] / 2, bet_image_array.shape[1] / 2
 
         for contour in bet_bubbles:
+            # logger.info(contour.bounding_box)
             just_text = contour.bounding_box.clip_2d_array(image_array)
 
-            just_text_grey_array = just_text[:, 4:]
+            center_bet_yx = list(contour.bounding_box.center_yx())
+            center_bet_yx[0] -= center_bet_area_yx[0]
+            center_bet_yx[1] -= center_bet_area_yx[1]
 
-            #just_text_grey_array = rgb_yx_array_to_grayscale(just_text)
+            player_position = None
+            if abs(center_bet_yx[0]) < 15:
+                player_position = 0
+            elif center_bet_yx[0] > 0 and center_bet_yx[1] < 0:
+                player_position = 1
+            elif center_bet_yx[0] < 0 and center_bet_yx[1] < 0:
+                player_position = 2
+            elif center_bet_yx[0] < 0 and center_bet_yx[1] > 0:
+                player_position = 3
+            elif center_bet_yx[0] > 0 and center_bet_yx[1] > 0:
+                player_position = 4
+            else:
+                raise Exception("cain")
+
+            # clip off 4 leftmost pixels which are giving false contours
+            just_text_grey_array = just_text[:, 4:]
 
             digit_contours = find_contours(grey_array=just_text_grey_array,
                                            **cfg.BET_CONTOUR_CONFIG,
-                                           #display=True
+                                           # display=True
                                            )
 
             digit_contours = list(digit_contours)
@@ -138,10 +155,10 @@ class NumberReader(object):
             this_bet_value = self._digit_contours_to_integer(digit_contours)
 
             if this_bet_value is not None:
-                logger.info("Found bet {}".format(this_bet_value))
-                display_image_with_contours(just_text_grey_array, [c.points_array for c in digit_contours])
-                all_bets.append(this_bet_value)
-
-
+                logger.info(
+                    "Found bet {}.  Bet area center {}.  Bet center {} ".format(this_bet_value, center_bet_area_yx,
+                                                                                center_bet_yx))
+                # display_image_with_contours(just_text_grey_array, [c.points_array for c in digit_contours])
+                all_bets[player_position] = this_bet_value
 
         return all_bets

@@ -14,6 +14,13 @@ class BoundingBox(object):
                int(self.min_y):int(self.max_y)+1,
                int(self.min_x):int(self.max_x)+1]
 
+    def center_yx(self):
+
+        return self.min_y + (self.max_y - self.min_y) / 2, self.min_x + (self.max_x-self.min_x) /2
+
+    def __repr__(self):
+
+        return "Bounding box.  Y {} to {}.  X {} to {}".format(self.min_y, self.max_y, self.min_x, self.max_x)
 
 class Contour(object):
 

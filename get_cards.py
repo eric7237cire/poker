@@ -44,7 +44,7 @@ def extract_game_info_from_screenshot(screenshot_file_path, card_classifier, num
         gi.to_call = 0
 
         if len(bets) > 0:
-            gi.to_call = bets[-1]
+            gi.to_call = bets[-1] - bets[0]
 
         gi.pot_starting = number_reader.get_starting_pot(game_area_image_array.copy())
 

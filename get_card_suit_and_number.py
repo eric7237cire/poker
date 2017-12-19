@@ -88,7 +88,7 @@ def get_suit_and_number(image, has_2_cards=False, clip_bottom=True):
         sorted_contours_1 = sorted(sorted_by_x[0:2], key=lambda c: c.bounding_box.min_y)
         sorted_contours_2 = sorted(sorted_by_x[-2:], key=lambda c: c.bounding_box.min_y)
 
-        #display_image_with_contours(grey_array, [c.points_array for c in sorted_by_x[3:5]])
+        #display_image_with_contours(grey_array, [c.points_array for c in sorted_contours_1])
 
         # suit, number
         return sorted_contours_1[1], sorted_contours_1[0], sorted_contours_2[1], sorted_contours_2[0]

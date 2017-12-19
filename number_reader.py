@@ -85,22 +85,35 @@ class NumberReader(object):
         return starting_pot_value
 
     def get_bets(self, game_area_image_array):
-        image_array = game_area_image_array
 
-        bet_image_array = cfg.BETS_AREA.clip_2d_array(image_array)
+
+        bet_image_array = cfg.BETS_AREA.clip_2d_array(game_area_image_array)
         # get just green component
 
         # display_image_with_contours(bet_image_array, [])
 
+        # Basically we just want green things, so...
+
+        # take max of red and blue columns (indexs 0 and 2)
+        max_red_blue_value = np.max( bet_image_array[:, :, [0,2]], axis=2 )
+
+        # build a boolean array of green values that are less than the max of red or blue
+        cond = bet_image_array[:,:,1] < max_red_blue_value
+
+        # for those pixels where green not the max, set it to 0, otherwise subtract the max
+        bet_image_array[:, :, 1] = np.where(cond, 0, bet_image_array[:,:,1]-max_red_blue_value)
+
+        # now we just have a picture of green things
         image_array = bet_image_array[:, :, 1].copy()
 
-        image_array[image_array < 200] = 0
+        #display_image_with_contours(image_array, [])
 
         bet_bubbles = find_contours(grey_array=image_array,
                                     min_width=30,
                                     max_width=100,
                                     min_height=9,
-                                    max_height=15
+                                    max_height=15,
+                                    #display=True
                                     )
 
         bet_bubbles = sorted(bet_bubbles, key=lambda x: x.bounding_box.min_x)
@@ -109,18 +122,26 @@ class NumberReader(object):
         all_bets = []
 
         for contour in bet_bubbles:
-            just_text = contour.bounding_box.clip_2d_array(bet_image_array)
+            just_text = contour.bounding_box.clip_2d_array(image_array)
 
-            just_text_grey_array = rgb_yx_array_to_grayscale(just_text)
+            just_text_grey_array = just_text[:, 4:]
+
+            #just_text_grey_array = rgb_yx_array_to_grayscale(just_text)
 
             digit_contours = find_contours(grey_array=just_text_grey_array,
-                                           **cfg.BET_CONTOUR_CONFIG
+                                           **cfg.BET_CONTOUR_CONFIG,
+                                           #display=True
                                            )
+
+            digit_contours = list(digit_contours)
 
             this_bet_value = self._digit_contours_to_integer(digit_contours)
 
             if this_bet_value is not None:
+                logger.info("Found bet {}".format(this_bet_value))
+                display_image_with_contours(just_text_grey_array, [c.points_array for c in digit_contours])
                 all_bets.append(this_bet_value)
-            # display_image_with_contours(just_text_grey_array, [c.points_array for c in digit_contours])
+
+
 
         return all_bets

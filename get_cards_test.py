@@ -8,16 +8,7 @@ class TestGetCards(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        root = logging.getLogger()
-        root.setLevel(logging.DEBUG)
-
-        ch = logging.StreamHandler(sys.stdout)
-        ch.setLevel(logging.DEBUG)
-        formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-        ch.setFormatter(formatter)
-        root.addHandler(ch)
-
-        logging.getLogger("PIL.PngImagePlugin").setLevel(logging.INFO)
+        init_logger()
 
     def setUp(self):
         self.longMessage = True

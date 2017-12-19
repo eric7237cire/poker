@@ -17,6 +17,18 @@ import logging
 import sys
 from shapely.geometry import Polygon
 
+def init_logger():
+    root = logging.getLogger()
+    root.setLevel(logging.DEBUG)
+
+    ch = logging.StreamHandler(sys.stdout)
+    ch.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    ch.setFormatter(formatter)
+    root.addHandler(ch)
+
+    logging.getLogger("PIL.PngImagePlugin").setLevel(logging.INFO)
+    logging.getLogger("card_classifier_trace").setLevel(logging.INFO)
 
 def diff_polygons(contour_1, contour_2, scale_polygons=True):
     """

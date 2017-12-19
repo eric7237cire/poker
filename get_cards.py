@@ -27,7 +27,7 @@ def get_hole_cards(game_area_image_array, card_classifier, game_info):
 
     game_info.hole_cards = card_classifier.evaluate_hole_card_image(cropped_image)
 
-    logger.debug("Found hole card {} and {}".format(
+    logger.info("Found hole card {} and {}".format(
         card_classifier.get_card_string(game_info.hole_cards[0]),
         card_classifier.get_card_string(game_info.hole_cards[1])
     ))
@@ -116,6 +116,17 @@ def extract_game_info_from_screenshot(screenshot_file_path, card_classifier, num
 
 
 def main():
+    root = logging.getLogger()
+    root.setLevel(logging.DEBUG)
+
+    ch = logging.StreamHandler(sys.stdout)
+    ch.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    ch.setFormatter(formatter)
+    root.addHandler(ch)
+
+    logging.getLogger("PIL.PngImagePlugin").setLevel(logging.INFO)
+
     card_classifier = CardClassifier()
     number_reader = NumberReader()
 

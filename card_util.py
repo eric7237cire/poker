@@ -24,14 +24,15 @@ def init_logger():
     ch = logging.StreamHandler(sys.stdout)
     #ch.setLevel(logging.INFO)
     ch.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    #formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-    #formatter = logging.Formatter('%(message)s')
+    formatter = logging.Formatter('%(name)s - %(message)s')
     ch.setFormatter(formatter)
     root.addHandler(ch)
 
     logging.getLogger("PIL.PngImagePlugin").setLevel(logging.INFO)
     logging.getLogger("card_classifier_trace").setLevel(logging.INFO)
+    logging.getLogger("number_reader").setLevel(logging.INFO)
 
 def diff_polygons(contour_1, contour_2, scale_polygons=True):
     """

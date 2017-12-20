@@ -216,12 +216,13 @@ class NumberReader(object):
             this_bet_value = self._digit_contours_to_integer(digit_contours)
 
             if this_bet_value is not None:
-                logger.info(
-                    "Found bet {}.  Players position: {} Bet area center: {}.  Bet center: {} ".format(
-                        this_bet_value,
-                        player_position,
+                logger.info(f"Found bet {this_bet_value}.  Players position: {player_position}")
+                logger.debug(
+                     "Bet area center: {}.  Bet center: {} ".format(
                         center_bet_area_yx,
-                                                                                center_bet_yx))
+                         center_bet_yx))
+
+
                 # display_image_with_contours(just_text_grey_array, [c.points_array for c in digit_contours])
                 all_bets[player_position] = this_bet_value
 

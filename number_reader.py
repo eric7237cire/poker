@@ -1,7 +1,14 @@
 # import the necessary packages
 
-from card_classifier import *
+import os
+import logging
+from configuration import Config as cfg
+from card_util import get_game_area_as_2d_array, rgb_yx_array_to_grayscale, \
+    find_contours, diff_polygons
+import numpy as np
 
+logger = logging.getLogger(__name__)
+trace_logger = logging.getLogger(__name__ + "_trace")
 
 class NumberReader(object):
 

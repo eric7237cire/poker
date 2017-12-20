@@ -1,11 +1,22 @@
 # import the necessary packages
+import logging
+import os
 import shutil
+from datetime import datetime
 
+import cv2
+import numpy as np
 from PIL import Image
 
-from card_classifier import *
+from card_classifier import CardClassifier
+from card_util import get_game_area_as_2d_array, find_contours_with_cv, \
+    get_black_and_white_image, init_logger, clip_and_save
+from configuration import Config as cfg
 from get_screenshot import capture_screenshot
 from number_reader import NumberReader
+
+logger = logging.getLogger(__name__)
+trace_logger = logging.getLogger(__name__ + "_trace")
 
 
 class GameInfo(object):
@@ -49,6 +60,8 @@ def extract_game_info_from_screenshot(screenshot_file_path, card_classifier, num
         gi.pot_starting = number_reader.get_starting_pot(game_area_image_array.copy())
 
         gi.pot = gi.pot_starting + np.sum(bets)
+
+        logger.info(f"Starting Pot: {gi.pot_starting}\nTotal Pot: {gi.pot}\nTo Call: {gi.to_call}")
 
     get_hole_cards(game_area_image_array=game_area_image_array,
                    card_classifier=card_classifier,
@@ -131,7 +144,8 @@ def main():
     now = datetime.now()
     formatted_time = now.strftime("%Y_%m_%d__%H_%M_%S_%f")
 
-    file_path = os.path.join(cfg.UNIT_TEST_DATA_DIR, 'bet4.png')
+    #file_path = os.path.join(cfg.UNIT_TEST_DATA_DIR, 'bet5.png')
+    file_path = None
 
     if file_path is None:
         file_path = os.path.join(cfg.SCREENSHOTS_PATH, 'screenshot_{}.png'.format(formatted_time))

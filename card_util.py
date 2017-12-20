@@ -1,21 +1,20 @@
+import logging
+import os
+import sys
+
 import cv2
 import imutils
-import os
-import matplotlib.pyplot as plt
-from datetime import datetime
-from configuration import Config as cfg
-import numpy as np
-from matplotlib.path import Path
-from scipy.misc import imresize
-from skimage import measure
 import matplotlib.patches as patches
-from dto import BoundingBox, Contour
-from PIL import Image, ImageDraw
-
+import matplotlib.pyplot as plt
+import numpy as np
+from PIL import Image
+from matplotlib.path import Path
 from shapely.affinity import translate, scale
-import logging
-import sys
-from shapely.geometry import Polygon
+from skimage import measure
+
+from configuration import Config as cfg
+from dto import BoundingBox, Contour
+
 
 def init_logger():
     root = logging.getLogger()

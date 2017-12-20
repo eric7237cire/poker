@@ -1,8 +1,13 @@
 # import the necessary packages
 from imutils import paths
+import logging
 
-from card_util import *
 from get_card_suit_and_number import get_suit_and_number
+from configuration import Config as cfg
+import numpy as np
+from card_util import diff_polygons, display_image_with_contours
+from PIL import Image
+import os
 
 logger = logging.getLogger(__name__)
 trace_logger = logging.getLogger(__name__ + "_trace")

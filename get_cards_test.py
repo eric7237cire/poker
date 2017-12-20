@@ -11,19 +11,16 @@ card_classifier = CardClassifier()
 
 number_reader = NumberReader()
 
+
 class TestGetCards(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
         init_logger()
 
-
-
     def setUp(self):
         self.longMessage = True
         self.UNIT_TEST_DATA_DIR = os.path.join(os.path.dirname(__file__), 'unit_test_data')
-
-
 
     def test_get_cards(self):
         file_path = os.path.join(self.UNIT_TEST_DATA_DIR, 'screenshot_5cards_1.png')
@@ -106,7 +103,6 @@ class TestGetCards(unittest.TestCase):
     def test_get_hole_cards_3(self):
         file_path = os.path.join(self.UNIT_TEST_DATA_DIR, 'screenshot_with_hole_cards_3.png')
 
-
         gi = extract_game_info_from_screenshot(screenshot_file_path=file_path, card_classifier=card_classifier)
 
         self.assertEqual(gi.common_cards[0], card_classifier.get_card_id('2', 'h'),
@@ -125,7 +121,6 @@ class TestGetCards(unittest.TestCase):
     def test_get_hole_cards_4(self):
         file_path = os.path.join(self.UNIT_TEST_DATA_DIR, 'screenshot_with_hole_cards_4.png')
 
-
         gi = extract_game_info_from_screenshot(screenshot_file_path=file_path, card_classifier=card_classifier)
 
         self.assertEqual(gi.common_cards[0], card_classifier.get_card_id('6', 'c'),
@@ -141,7 +136,6 @@ class TestGetCards(unittest.TestCase):
 
     def test_get_hole_cards_5(self):
         file_path = os.path.join(self.UNIT_TEST_DATA_DIR, 'screenshot_with_hole_cards_5.png')
-
 
         gi = extract_game_info_from_screenshot(screenshot_file_path=file_path, card_classifier=card_classifier
                                                )
@@ -181,7 +175,7 @@ class TestGetCards(unittest.TestCase):
 
         self.assertEqual(12000, gi.to_call)
         self.assertEqual(90000, gi.pot_starting)
-        self.assertEqual(90000+12000, gi.pot)
+        self.assertEqual(90000 + 12000, gi.pot)
 
     def test_bet2(self):
         file_path = os.path.join(self.UNIT_TEST_DATA_DIR, 'bet2.png')
@@ -205,7 +199,7 @@ class TestGetCards(unittest.TestCase):
 
         self.assertEqual(1000, gi.to_call)
         self.assertEqual(2000, gi.pot_starting)
-        self.assertEqual(2000+1000+2000, gi.pot)
+        self.assertEqual(2000 + 1000 + 2000, gi.pot)
 
     def test_bet3(self):
         file_path = os.path.join(self.UNIT_TEST_DATA_DIR, 'bet3.png')
@@ -241,11 +235,9 @@ class TestGetCards(unittest.TestCase):
         self.assertEqual(0, gi.pot_starting)
         self.assertEqual(4579 + 4000, gi.pot)
 
-
     def test_bet5(self):
         """
-        Tests pot amounts are correct if there is a side pot (basically someone
-        bet more than we have)
+        Tests pot amounts with side pots
         """
         file_path = os.path.join(self.UNIT_TEST_DATA_DIR, 'bet5.png')
 
@@ -259,10 +251,10 @@ class TestGetCards(unittest.TestCase):
         self.assertEqual(gi.hole_cards[1], card_classifier.get_card_id('6', 'd'),
                          msg=card_classifier.get_card_string(gi.hole_cards[1]))
 
-        #self.assertEqual(492000 - 2000, gi.to_call)
+        # self.assertEqual(492000 - 2000, gi.to_call)
         self.assertEqual(398000, gi.to_call)
         self.assertEqual(0, gi.pot_starting)
-        #self.assertEqual(394000 + 492000 + 2000 + 1000, gi.pot)
+        # self.assertEqual(394000 + 492000 + 2000 + 1000, gi.pot)
         self.assertEqual(394000 + 400000 + 2000 + 1000, gi.pot)
 
     def test_bet6(self):

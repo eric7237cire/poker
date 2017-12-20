@@ -60,6 +60,9 @@ class NumberReader(object):
 
         logger.debug(f"Numbers found: {numbers_found}")
 
+        # Last number will be the $
+        numbers_found = numbers_found[0:-1]
+
         this_bet_value = None
 
         if numbers_found:
@@ -162,7 +165,7 @@ class NumberReader(object):
     def get_bets(self, game_area_image_array):
 
         bet_image_array = cfg.BETS_AREA.clip_2d_array(game_area_image_array)
-        # display_image_with_contours(bet_image_array, [])
+        #display_image_with_contours(bet_image_array, [])
         # get just green component
 
         # display_image_with_contours(bet_image_array, [])
@@ -185,11 +188,14 @@ class NumberReader(object):
                                     min_width=30,
                                     max_width=100,
                                     min_height=9,
-                                    max_height=15,
-                                    # display=True
+                                    # Sometimes green chips can make height larger
+                                    max_height=35,
+                                    #display=True
                                     )
 
         bet_bubbles = sorted(bet_bubbles, key=lambda x: x.bounding_box.min_x)
+
+        #display_image_with_contours(image_array, [b.points_array for b in bet_bubbles])
 
         all_bets = [0] * 5
 
@@ -255,7 +261,7 @@ class NumberReader(object):
                          center_bet_yx))
 
 
-                #display_image_with_contours(just_text_grey_array, [c.points_array for c in digit_group_contours])
+                #display_image_with_contours(bet_image_grey_array, [c.points_array for c in digit_contours])
                 all_bets[player_position] = this_bet_value
 
         return all_bets

@@ -36,7 +36,7 @@ class Config(object):
         "min_width": 2,
         "max_width": 7,
         "min_height": 5,
-        "max_height": 11,
+        "max_height": 9,
         "value_threshold": 70
     }
 

@@ -34,7 +34,7 @@ class Config(object):
     }
     OTHER_PLAYER_BET_CONTOUR_CONFIG = {
         "min_width": 2,
-        "max_width": 14,
+        "max_width": 7,
         "min_height": 5,
         "max_height": 11,
         "value_threshold": 70

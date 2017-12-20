@@ -241,6 +241,10 @@ class NumberReader(object):
                                            display=False
                                            )
 
+            digit_contours = list(digit_contours)
+
+            # display_image_with_contours(bet_image_grey_array, [c.points_array for c in digit_contours])
+
             this_bet_value = self._digit_contours_to_integer(digit_contours)
 
             if this_bet_value is not None:

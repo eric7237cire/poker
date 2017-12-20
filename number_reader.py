@@ -82,6 +82,9 @@ class NumberReader(object):
         #
         #                                                    [x[1].points_array for x in self.training_data if x[0] in [9,0]])
 
+        if starting_pot_value is None:
+            starting_pot_value = 0
+
         return starting_pot_value
 
     def get_bets(self, game_area_image_array):

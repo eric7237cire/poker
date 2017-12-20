@@ -208,3 +208,23 @@ class TestGetCards(unittest.TestCase):
         self.assertEqual(2000, gi.pot_starting)
         self.assertEqual(2000+1000+2000, gi.pot)
 
+    def test_bet3(self):
+        file_path = os.path.join(self.UNIT_TEST_DATA_DIR, 'bet3.png')
+        card_classifier = CardClassifier()
+
+        number_reader = NumberReader()
+
+        gi = extract_game_info_from_screenshot(screenshot_file_path=file_path, card_classifier=card_classifier,
+                                               number_reader=number_reader)
+
+        self.assertEqual(0, len(gi.common_cards))
+
+        self.assertEqual(gi.hole_cards[0], card_classifier.get_card_id('k', 'h'),
+                         msg=card_classifier.get_card_string(gi.hole_cards[0]))
+        self.assertEqual(gi.hole_cards[1], card_classifier.get_card_id('q', 'h'),
+                         msg=card_classifier.get_card_string(gi.hole_cards[1]))
+
+        self.assertEqual(200246 - 4123, gi.to_call)
+        self.assertEqual(0, gi.pot_starting)
+        self.assertEqual(200246 + 2000 + 4123, gi.pot)
+

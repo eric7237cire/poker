@@ -116,16 +116,7 @@ def extract_game_info_from_screenshot(screenshot_file_path, card_classifier, num
 
 
 def main():
-    root = logging.getLogger()
-    root.setLevel(logging.DEBUG)
-
-    ch = logging.StreamHandler(sys.stdout)
-    ch.setLevel(logging.DEBUG)
-    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-    ch.setFormatter(formatter)
-    root.addHandler(ch)
-
-    logging.getLogger("PIL.PngImagePlugin").setLevel(logging.INFO)
+    init_logger()
 
     card_classifier = CardClassifier()
     number_reader = NumberReader()
@@ -140,12 +131,11 @@ def main():
     now = datetime.now()
     formatted_time = now.strftime("%Y_%m_%d__%H_%M_%S_%f")
 
-    file_path = os.path.join(cfg.SCREENSHOTS_PATH, 'screenshot_{}.png'.format(formatted_time))
-    capture_screenshot("chrome", output_file_path=file_path)
+    file_path = os.path.join(cfg.UNIT_TEST_DATA_DIR, 'bet4.png')
 
-    # file_path = r"E:\git\poker\screenshots\screenshot_2017_12_17__14_54_05_754106.png"
-
-    file_path = os.path.join(cfg.UNIT_TEST_DATA_DIR, 'bet2.png')
+    if file_path is None:
+        file_path = os.path.join(cfg.SCREENSHOTS_PATH, 'screenshot_{}.png'.format(formatted_time))
+        capture_screenshot("chrome", output_file_path=file_path)
 
     extract_game_info_from_screenshot(file_path, card_classifier, number_reader)
 

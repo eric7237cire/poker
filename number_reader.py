@@ -33,7 +33,7 @@ class NumberReader(object):
         hero_bet_grey_array[hero_bet_grey_array >= 121] = 255
 
         contour_list = find_contours(grey_array=hero_bet_grey_array,
-                                     **cfg.BET_CONTOUR_CONFIG
+                                     **cfg.OTHER_PLAYER_BET_CONTOUR_CONFIG
                                      )
         sorted_contours = sorted(contour_list, key=lambda x: x.bounding_box.min_x)
 
@@ -108,30 +108,14 @@ class NumberReader(object):
 
         digit_group_contours = list(digit_group_contours)
 
-        right_x = np.max(digit_group_contours[-1].points_array[:, 1])
-        left_x = np.min(digit_group_contours[0].points_array[:, 1])
-
-        #  ..... ................ .....
-
-        right_x = int(round(right_x))
-        left_x = int(round(left_x))
-
-        x_to_insert_blank_line = right_x - 5 - 1
-
-        seps_added = 0
-        while x_to_insert_blank_line > left_x:
-            chips_image_grey_array = np.insert(chips_image_grey_array, obj=x_to_insert_blank_line,
-                                               values=0, axis=1)
-
-            x_to_insert_blank_line -= 5
-            seps_added+=1
-
-            if seps_added % 3 == 0:
-                x_to_insert_blank_line -= 1
+        chips_image_grey_array = self.add_spaces_to_digits(
+            image_grey_array=chips_image_grey_array,
+            digit_group_contours=digit_group_contours
+        )
 
         digit_contours = find_contours(grey_array=chips_image_grey_array,
                                              **cfg.CHIPS_REMAINING_DIGIT_CONTOUR_CONFIG,
-                                             #display=True
+                                             display=False
 
                                              )
         digit_contours = list(digit_contours)
@@ -144,6 +128,36 @@ class NumberReader(object):
                                     [c.points_array for c in digit_contours])
 
         return chips_remaining
+
+    def add_spaces_to_digits(self, image_grey_array, digit_group_contours, digit_width=5, fill_color=0):
+        right_x = np.max(digit_group_contours[-1].points_array[:, 1])
+        left_x = np.min(digit_group_contours[0].points_array[:, 1])
+
+        if digit_width == 6:
+            right_x = int(round(right_x+0.4))
+        else:
+            right_x = int(round(right_x))
+        left_x = int(round(left_x))
+
+        # account for the $ sign and an extra space
+        x_to_insert_blank_line = right_x - digit_width - 1
+
+        seps_added = 0
+        while x_to_insert_blank_line > left_x:
+            image_grey_array = np.insert(image_grey_array, obj=x_to_insert_blank_line,
+                                               values=fill_color, axis=1)
+
+            x_to_insert_blank_line -= digit_width
+            seps_added += 1
+
+            # each group of 3 gets an extra space
+            if seps_added % 3 == 0:
+                if digit_width == 6:
+                    x_to_insert_blank_line -= 3
+                else:
+                    x_to_insert_blank_line -= 1
+
+        return image_grey_array
 
     def get_bets(self, game_area_image_array):
 
@@ -206,12 +220,26 @@ class NumberReader(object):
             # clip off 4 leftmost pixels which are giving false contours
             just_text_grey_array = just_text[:, 4:]
 
-            digit_contours = find_contours(grey_array=just_text_grey_array,
-                                           **cfg.BET_CONTOUR_CONFIG,
-                                           # display=True
-                                           )
+            digit_group_contours = find_contours(grey_array=just_text_grey_array,
+                                                 **cfg.OTHER_PLAYER_BET_DIGIT_GROUP_CONFIG,
+                                                 display=False
+                                                 )
 
-            digit_contours = list(digit_contours)
+            digit_group_contours = list(digit_group_contours)
+
+            #display_image_with_contours(just_text_grey_array, [c.points_array for c in digit_group_contours])
+
+            bet_image_grey_array = self.add_spaces_to_digits(
+                image_grey_array=just_text_grey_array,
+                digit_group_contours=digit_group_contours,
+                digit_width=6,
+                fill_color=255
+            )
+
+            digit_contours = find_contours(grey_array=bet_image_grey_array,
+                                           **cfg.OTHER_PLAYER_BET_CONTOUR_CONFIG,
+                                           display=False
+                                           )
 
             this_bet_value = self._digit_contours_to_integer(digit_contours)
 
@@ -223,7 +251,7 @@ class NumberReader(object):
                          center_bet_yx))
 
 
-                # display_image_with_contours(just_text_grey_array, [c.points_array for c in digit_contours])
+                #display_image_with_contours(just_text_grey_array, [c.points_array for c in digit_group_contours])
                 all_bets[player_position] = this_bet_value
 
         return all_bets

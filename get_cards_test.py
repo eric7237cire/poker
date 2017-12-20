@@ -285,6 +285,6 @@ class TestGetCards(unittest.TestCase):
                          msg=card_classifier.get_card_string(gi.hole_cards[1]))
 
         self.assertEqual(64000, gi.to_call)
-        self.assertEqual(0, gi.pot_starting)
+        self.assertEqual(1202000, gi.pot_starting)
         self.assertEqual(64000, gi.chips_remaining)
         self.assertEqual(1202000 + 64000, gi.pot)

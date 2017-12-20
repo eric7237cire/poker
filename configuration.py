@@ -25,7 +25,14 @@ class Config(object):
 
     STARTING_POT_AREA = BoundingBox(min_x=320, max_x=440, min_y=200, max_y=230)
 
-    BET_CONTOUR_CONFIG = {
+    OTHER_PLAYER_BET_DIGIT_GROUP_CONFIG = {
+        "min_width": 2,
+        "max_width": 14,
+        "min_height": 5,
+        "max_height": 11,
+        "value_threshold": 80
+    }
+    OTHER_PLAYER_BET_CONTOUR_CONFIG = {
         "min_width": 2,
         "max_width": 14,
         "min_height": 5,

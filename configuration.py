@@ -21,6 +21,7 @@ class Config(object):
 
     HERO_BETTING_AREA = BoundingBox(min_y=240, max_y=260, min_x=350, max_x=420)
     BETS_AREA = BoundingBox(min_y=75, max_y=325, min_x=100, max_x=650)
+    HERO_REMAINING_CHIPS_AREA = BoundingBox(min_y=345, max_y=365, min_x=350, max_x=420)
 
     STARTING_POT_AREA = BoundingBox(min_x=320, max_x=440, min_y=200, max_y=230)
 
@@ -38,6 +39,26 @@ class Config(object):
         "min_height": 5,
         "max_height": 11,
         "value_threshold": 220,
+        # Works better probably because the digits are higher valued
+        "fully_connected": "high"
+    }
+
+    CHIPS_REMAINING_DIGIT_GROUPS_CONTOUR_CONFIG = {
+        "min_width": 2,
+        "max_width": 64,
+        "min_height": 5,
+        "max_height": 13,
+        "value_threshold": 20,
+        # Works better probably because the digits are higher valued
+        "fully_connected": "high"
+    }
+
+    CHIPS_REMAINING_DIGIT_CONTOUR_CONFIG = {
+        "min_width": 2,
+        "max_width": 6,
+        "min_height": 5,
+        "max_height": 13,
+        "value_threshold": 180,
         # Works better probably because the digits are higher valued
         "fully_connected": "high"
     }

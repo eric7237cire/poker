@@ -55,11 +55,12 @@ def extract_game_info_from_screenshot(screenshot_file_path, card_classifier, num
         gi.to_call = 0
 
         if len(bets) > 0:
-            gi.to_call = np.max(bets[1:]) - bets[0]
+            gi.chips_remaining = number_reader.get_hero_chips_remaining(game_area_image_array.copy())
+            gi.to_call = min(np.max(bets[1:]), gi.chips_remaining+bets[0]) - bets[0]
 
         gi.pot_starting = number_reader.get_starting_pot(game_area_image_array.copy())
 
-        gi.pot = gi.pot_starting + np.sum(bets)
+        gi.pot = gi.pot_starting + np.sum( [ min(gi.chips_remaining+bets[0], b) for b in bets])
 
         logger.info(f"Starting Pot: {gi.pot_starting}\nTotal Pot: {gi.pot}\nTo Call: {gi.to_call}")
 

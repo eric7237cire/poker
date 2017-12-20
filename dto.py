@@ -1,5 +1,6 @@
 from shapely.geometry import Polygon
 
+
 class BoundingBox(object):
 
     def __init__(self, min_x=None, max_x=None, min_y=None, max_y=None):
@@ -9,18 +10,16 @@ class BoundingBox(object):
         self.max_y = max_y
 
     def clip_2d_array(self, image_yx_array):
-
         return image_yx_array[
-               int(self.min_y):int(self.max_y)+1,
-               int(self.min_x):int(self.max_x)+1]
+               int(self.min_y):int(self.max_y) + 1,
+               int(self.min_x):int(self.max_x) + 1]
 
     def center_yx(self):
-
-        return self.min_y + (self.max_y - self.min_y) / 2, self.min_x + (self.max_x-self.min_x) /2
+        return self.min_y + (self.max_y - self.min_y) / 2, self.min_x + (self.max_x - self.min_x) / 2
 
     def __repr__(self):
-
         return "Bounding box.  Y {} to {}.  X {} to {}".format(self.min_y, self.max_y, self.min_x, self.max_x)
+
 
 class Contour(object):
 

@@ -15,14 +15,18 @@ from skimage import measure
 from configuration import Config as cfg
 from dto import BoundingBox, Contour
 
+logger = logging.getLogger(__name__)
 
 def init_logger():
     root = logging.getLogger()
     root.setLevel(logging.DEBUG)
 
     ch = logging.StreamHandler(sys.stdout)
+    #ch.setLevel(logging.INFO)
     ch.setLevel(logging.DEBUG)
     formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
+    #formatter = logging.Formatter('%(message)s')
     ch.setFormatter(formatter)
     root.addHandler(ch)
 
@@ -191,9 +195,11 @@ def find_contours(
         height = c.bounding_box.max_y - c.bounding_box.min_y
 
         if width < min_width or width > max_width:
+            #logger.debug(f"Skipping contour #{idx}: {c} due to width")
             continue
 
         if height < min_height or height > max_height:
+            #logger.debug(f"Skipping contour #{idx}: {c} due to height")
             continue
 
         # print(f"Found contour @ {min_x},{min_y} Width={width} Height={height} Numpoints={len(contour)}")

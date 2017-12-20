@@ -4,7 +4,7 @@ import os
 import logging
 from configuration import Config as cfg
 from card_util import get_game_area_as_2d_array, rgb_yx_array_to_grayscale, \
-    find_contours, diff_polygons
+    find_contours, diff_polygons, display_image_with_contours
 import numpy as np
 
 logger = logging.getLogger(__name__)
@@ -93,6 +93,57 @@ class NumberReader(object):
             starting_pot_value = 0
 
         return starting_pot_value
+
+    def get_hero_chips_remaining(self, game_area_image_array):
+        chips_image_array = cfg.HERO_REMAINING_CHIPS_AREA.clip_2d_array(game_area_image_array)
+        #display_image_with_contours(chips_image_array, contours=[])
+
+        chips_image_grey_array = rgb_yx_array_to_grayscale(chips_image_array)
+
+        digit_group_contours = find_contours(grey_array=chips_image_grey_array,
+                                       **cfg.CHIPS_REMAINING_DIGIT_GROUPS_CONTOUR_CONFIG,
+                                       display=False
+
+                                       )
+
+        digit_group_contours = list(digit_group_contours)
+
+        right_x = np.max(digit_group_contours[-1].points_array[:, 1])
+        left_x = np.min(digit_group_contours[0].points_array[:, 1])
+
+        #  ..... ................ .....
+
+        right_x = int(round(right_x))
+        left_x = int(round(left_x))
+
+        x_to_insert_blank_line = right_x - 5 - 1
+
+        seps_added = 0
+        while x_to_insert_blank_line > left_x:
+            chips_image_grey_array = np.insert(chips_image_grey_array, obj=x_to_insert_blank_line,
+                                               values=0, axis=1)
+
+            x_to_insert_blank_line -= 5
+            seps_added+=1
+
+            if seps_added % 3 == 0:
+                x_to_insert_blank_line -= 1
+
+        digit_contours = find_contours(grey_array=chips_image_grey_array,
+                                             **cfg.CHIPS_REMAINING_DIGIT_CONTOUR_CONFIG,
+                                             #display=True
+
+                                             )
+        digit_contours = list(digit_contours)
+        chips_remaining = self._digit_contours_to_integer(digit_contours)
+
+        logger.info(f"Chips remaining: {chips_remaining}")
+
+        if False:
+            display_image_with_contours(chips_image_grey_array,
+                                    [c.points_array for c in digit_contours])
+
+        return chips_remaining
 
     def get_bets(self, game_area_image_array):
 

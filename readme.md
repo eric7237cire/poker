@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/eric7237cire/poker.svg?branch=master)](https://travis-ci.org/eric7237cire/poker)
 
-This repo contains code to parse a poker game from a screeshot.
+This repo contains code to parse poker game information from a screenshot.
 
 It's a sandbox for image processing / manipulation using the nice options available to python, like
 

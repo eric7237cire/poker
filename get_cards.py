@@ -145,8 +145,8 @@ def main():
     now = datetime.now()
     formatted_time = now.strftime("%Y_%m_%d__%H_%M_%S_%f")
 
-    #file_path = os.path.join(cfg.UNIT_TEST_DATA_DIR, 'bet5.png')
-    file_path = None
+    file_path = os.path.join(cfg.UNIT_TEST_DATA_DIR, 'bet7.png')
+    #file_path = None
 
     if file_path is None:
         file_path = os.path.join(cfg.SCREENSHOTS_PATH, 'screenshot_{}.png'.format(formatted_time))

@@ -288,3 +288,29 @@ class TestGetCards(unittest.TestCase):
         self.assertEqual(1202000, gi.pot_starting)
         self.assertEqual(64000, gi.chips_remaining)
         self.assertEqual(1202000 + 64000, gi.pot)
+
+    def test_cards_1(self):
+        file_path = os.path.join(self.UNIT_TEST_DATA_DIR, 'cards1.png')
+
+        gi = extract_game_info_from_screenshot(screenshot_file_path=file_path, card_classifier=card_classifier,
+                                               number_reader=number_reader)
+
+        self.assertEqual(gi.common_cards[0], card_classifier.get_card_id('q', 'c'),
+                         msg=card_classifier.get_card_string(gi.common_cards[0]))
+        self.assertEqual(gi.common_cards[1], card_classifier.get_card_id('3', 'c'))
+        self.assertEqual(gi.common_cards[2], card_classifier.get_card_id('a', 'd'),
+                         msg=card_classifier.get_card_string(gi.common_cards[2]))
+        self.assertEqual(gi.common_cards[3], card_classifier.get_card_id('4', 's'))
+        self.assertEqual(gi.common_cards[4], card_classifier.get_card_id('3', 's'))
+
+        self.assertEqual(5, len(gi.common_cards))
+
+        self.assertEqual(gi.hole_cards[0], card_classifier.get_card_id('3', 'd'),
+                         msg=card_classifier.get_card_string(gi.hole_cards[0]))
+        self.assertEqual(gi.hole_cards[1], card_classifier.get_card_id('8', 'c'),
+                         msg=card_classifier.get_card_string(gi.hole_cards[1]))
+
+        self.assertEqual(-6000, gi.to_call)
+        self.assertEqual(14000, gi.pot_starting)
+        self.assertEqual(911776, gi.chips_remaining)
+        self.assertEqual(14000 + 6000, gi.pot)

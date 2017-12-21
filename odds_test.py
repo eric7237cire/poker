@@ -29,12 +29,11 @@ class TestOdds(unittest.TestCase):
     def test_perc_to_odds(self):
 
         odds = perc_to_odds_to_1(36.96)
-        self.assertAlmostEqual(1.7, odds[0], places=1)
-        self.assertAlmostEqual(1, odds[1], places=1)
+        self.assertAlmostEqual(1.7, odds, places=1)
+
 
         odds = perc_to_odds_to_1(48.1)
-        self.assertAlmostEqual(1.1, odds[0], places=1)
-        self.assertAlmostEqual(1, odds[1], places=1)
+        self.assertAlmostEqual(1.1, odds, places=1)
 
     def test_pot_odds(self):
 

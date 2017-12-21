@@ -7,6 +7,7 @@ from datetime import datetime
 import cv2
 import numpy as np
 from PIL import Image
+import time
 
 from card_classifier import CardClassifier
 from card_util import get_game_area_as_2d_array, find_contours_with_cv, \
@@ -14,9 +15,21 @@ from card_util import get_game_area_as_2d_array, find_contours_with_cv, \
 from configuration import Config as cfg
 from get_screenshot import capture_screenshot
 from number_reader import NumberReader
-
+from scipy.special import comb
 logger = logging.getLogger(__name__)
 trace_logger = logging.getLogger(__name__ + "_trace")
+
+
+
+def get_out_odds(len_common_cards, n_outs, n_chances):
+    cards_left = 52.0 - len_common_cards - 2
+
+    denom = comb(N=cards_left, k=n_chances, exact=False, repetition=False)
+    num = comb(N=n_outs, k=n_chances, exact=False, repetition=False)
+
+    if n_chances == 2:
+        num += n_outs * (cards_left-n_outs)
+    return 100.0 * (num / denom)
 
 
 class GameInfo(object):
@@ -27,6 +40,11 @@ class GameInfo(object):
 
         self.pot_starting = None
         self.to_call = None
+        self.pot = None
+
+
+
+
 
 
 def get_hole_cards(game_area_image_array, card_classifier, game_info):
@@ -145,14 +163,18 @@ def main():
     now = datetime.now()
     formatted_time = now.strftime("%Y_%m_%d__%H_%M_%S_%f")
 
-    file_path = os.path.join(cfg.UNIT_TEST_DATA_DIR, 'bet7.png')
-    #file_path = None
+    #file_path = os.path.join(cfg.UNIT_TEST_DATA_DIR, 'bet7.png')
+    file_path = None
 
-    if file_path is None:
+    #if file_path is None:
+    iterations = 60 * 60
+
+    for i in range(0, iterations):
+
         file_path = os.path.join(cfg.SCREENSHOTS_PATH, 'screenshot_{}.png'.format(formatted_time))
         capture_screenshot("chrome", output_file_path=file_path)
 
-    extract_game_info_from_screenshot(file_path, card_classifier, number_reader)
+        extract_game_info_from_screenshot(file_path, card_classifier, number_reader)
 
 
 if __name__ == '__main__':

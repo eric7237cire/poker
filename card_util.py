@@ -23,7 +23,7 @@ def init_logger():
 
     ch = logging.StreamHandler(sys.stdout)
     #ch.setLevel(logging.INFO)
-    ch.setLevel(logging.DEBUG)
+    ch.setLevel(logging.ERROR)
     #formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
     formatter = logging.Formatter('%(name)s - %(message)s')
@@ -45,6 +45,10 @@ def diff_polygons(contour_1, contour_2, scale_polygons=True):
 
     poly1 = contour_1.polygon
     poly2 = contour_2.polygon
+
+    if not poly1.is_valid or not poly2.is_valid:
+        logger.warning("Polygons not valid")
+        return 10000000000000
 
     minx1, miny1, maxx1, maxy1 = poly1.bounds
     minx2, miny2, maxx2, maxy2 = poly2.bounds
@@ -160,6 +164,10 @@ def find_contours(
     # grey_array[grey_array < 150] = 0
     # grey_array[grey_array >= 150] = 255
 
+    if grey_array is None or grey_array.ndim != 2:
+        logger.warning("Not a valid array passed to find_contours")
+        return
+
     # http://scikit-image.org/docs/dev/auto_examples/edges/plot_contours.html?highlight=find_contours
     all_contours = measure.find_contours(grey_array, level=value_threshold, fully_connected=fully_connected)
 
@@ -216,7 +224,7 @@ def find_contours(
             if c2 is None:
                 continue
 
-            if c2.polygon is not None and c.polygon.contains(c2.polygon):
+            if c2.polygon is not None and c.polygon.contains(c2.polygon) and c2.polygon.is_valid:
                 c.polygon = c.polygon.difference(c2.polygon)
                 # don't return it in future runs
                 contour_list[idx2] = None

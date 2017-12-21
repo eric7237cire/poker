@@ -133,6 +133,11 @@ class NumberReader(object):
         return chips_remaining
 
     def add_spaces_to_digits(self, image_grey_array, digit_group_contours, digit_width=5, fill_color=0):
+
+        if digit_group_contours is None or len(digit_group_contours) <= 1:
+            logger.warning("Not enough digit groups")
+            return
+
         right_x = np.max(digit_group_contours[-1].points_array[:, 1])
         left_x = np.min(digit_group_contours[0].points_array[:, 1])
 

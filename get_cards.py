@@ -48,10 +48,11 @@ class GameInfo(object):
         self.pot_starting = None
         self.to_call = None
         self.pot = None
+        self.chips_remaining = None
 
     def pot_odds(self):
         if self.pot is None or self.to_call is None or self.to_call <= 0:
-            return -1
+            return -2
         return self.pot / self.to_call
 
     def is_equal(self, other_gi):
@@ -88,6 +89,7 @@ def get_hole_cards(game_area_image_array, card_classifier, game_info):
 
 
 def extract_game_info_from_screenshot(screenshot_file_path, card_classifier, number_reader=None):
+    logger.info(f"Starting catpure of {screenshot_file_path}")
     gi = GameInfo()
 
     game_area_image_array = get_game_area_as_2d_array(screenshot_file_path)
@@ -208,7 +210,7 @@ def main():
         gi = extract_game_info_from_screenshot(file_path, card_classifier, number_reader)
 
         if gi.is_equal(last_gi):
-            event_exit.wait(1)
+            event_exit.wait(.5)
             continue
 
         print("*" * 80)
@@ -218,22 +220,29 @@ def main():
         for h in gi.hole_cards:
             print(f"Hole card: {card_classifier.get_card_string(h)}")
 
+        if gi.chips_remaining is not None:
+            print("Chips remaining: {:,}".format(gi.chips_remaining))
+        print("Starting Pot: {:,}".format(gi.pot_starting))
+        if gi.pot is not None:
+            print("Pot: {:,}".format(gi.pot))
+        print("To Call: {:,}".format(gi.to_call))
+
         for outs in [9, 8, 4, 2]:
             perc = get_out_odds(len_common_cards=len(gi.common_cards), n_outs=outs, n_chances=1)
             ratio = perc_to_odds_to_1(perc)
-            print(f"{outs} outs.  {perc:.2f}% = {ratio:.2f}")
+            print(f"{outs} outs.  {perc:.2f}% = {ratio:.2f}:1")
 
             if len(gi.common_cards) == 3:
                 perc = get_out_odds(len_common_cards=len(gi.common_cards), n_outs=outs, n_chances=2)
                 ratio = perc_to_odds_to_1(perc)
 
-                print(f"{outs} outs.  2 cards to go {perc:.2f}% = {ratio:.2f}")
+                print(f"{outs} outs.  2 cards to go {perc:.2f}% = {ratio:.2f}:1")
 
-        print(f"\nPot odds: {gi.pot_odds():.2f}")
+        print(f"\nPot odds: { 100.0/(1+gi.pot_odds()):.2f}%  = {gi.pot_odds():.2f}:1 ")
 
         last_gi = gi
 
-        event_exit.wait(1)
+        event_exit.wait(.5)
 
 
 def quit(signo, _frame):

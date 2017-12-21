@@ -217,6 +217,9 @@ def find_contours(
             #display_image_with_contours(grey_array, [c.points_array ])
             pass
 
+        if not c.polygon.is_valid:
+            logger.warning("Polygon is not valid")
+
         # See if any additional contours fit 100% inside
         for idx2 in range(idx+1, len(contour_list)):
             c2 = contour_list[idx2]

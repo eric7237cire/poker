@@ -58,6 +58,16 @@ class CardClassifier(object):
 
         return "{} of {}".format(self.RANKS[rank].upper(), self.SUITS_VERBOSE[suit])
 
+    def get_card_short_string(self, card_id):
+
+        if not isinstance(card_id, int):
+            return None
+
+        suit = int(card_id / 13)
+        rank = card_id % 13
+
+        return "{}{}".format(self.RANKS[rank].upper(), self.SUITS[suit])
+
     def get_test_card(self, rank, suit):
 
         card_id = self.get_card_id(rank, suit)

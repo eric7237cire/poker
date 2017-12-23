@@ -3,7 +3,7 @@ import logging
 import os
 import shutil
 from datetime import datetime
-
+import poker
 import cv2
 import numpy as np
 from PIL import Image
@@ -201,8 +201,7 @@ def main():
 
     last_gi = None
     for i in range(0, iterations):
-        if event_exit.is_set():
-            break
+
 
         file_path = os.path.join(cfg.SCREENSHOTS_PATH, 'screenshot_{}.png'.format(formatted_time))
         capture_screenshot("chrome", output_file_path=file_path)
@@ -210,7 +209,9 @@ def main():
         gi = extract_game_info_from_screenshot(file_path, card_classifier, number_reader)
 
         if gi.is_equal(last_gi):
-            event_exit.wait(.5)
+            #event_exit.wait(.5)
+            for i in range(0, 30):
+                time.sleep(0.1)
             continue
 
         print("*" * 80)
@@ -240,9 +241,19 @@ def main():
 
         print(f"\nPot odds: { 100.0/(1+gi.pot_odds()):.2f}%  = {gi.pot_odds():.2f}:1 ")
 
+        if len(gi.hole_cards) == 2 and gi.hole_cards[0] is not None:
+            hole_card_string = "".join([card_classifier.get_card_short_string(hc) for hc in gi.hole_cards])
+            common_cards_string = "".join([card_classifier.get_card_short_string(cc) for cc in gi.common_cards])
+            equity3 = poker.run_simulation(3, hole_card_string, common_cards_string, 500000, False)
+            equity4 = poker.run_simulation(4, hole_card_string, common_cards_string, 500000, False)
+            equity5 = poker.run_simulation(5, hole_card_string, common_cards_string, 500000, False)
+
+            print(f"Equity:\n3 players: {equity3:.2f}%\n4 players: {equity4:.2f}%\n5 players: {equity5:.2f}% ")
+
         last_gi = gi
 
-        event_exit.wait(.5)
+        for i in range(0,30):
+            time.sleep(0.1)
 
 
 def quit(signo, _frame):
@@ -253,8 +264,10 @@ if __name__ == '__main__':
 
     import signal
 
-    for sig in ('TERM',  'INT'):
-        signal.signal(getattr(signal, 'SIG' + sig), quit);
+    #signal.signal(signal.CTRL_C_EVENT, quit)
+    #signal.signal(signal.CTRL_BREAK_EVENT, quit)
+    signal.signal(signal.SIGINT,quit)
+    signal.signal(signal.SIGBREAK, quit)
 
     try:
         main()

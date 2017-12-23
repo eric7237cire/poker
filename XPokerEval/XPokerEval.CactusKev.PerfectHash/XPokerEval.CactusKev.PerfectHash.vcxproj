@@ -80,6 +80,11 @@
   <ItemGroup>
     <Text Include="ABOUT.TXT" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\XPokerEval.RNG\XPokerEval.RNG.vcxproj">
+      <Project>{337efd44-e690-462c-81fb-1183ca4016f6}</Project>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

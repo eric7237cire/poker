@@ -10,3 +10,11 @@ It's a sandbox for image processing / manipulation using the nice options availa
 4.  [Numpy](http://www.numpy.org/)
 
 
+
+Looking into poker evaluation libaries:
+
+1.  [SKPokerEval.  A fast and lightweight 32-bit Texas Hold'em 7-card hand evaluator written in C++.](https://github.com/kennethshackleton/SKPokerEval)
+2.  [Algo explanation](http://suffe.cool/poker/evaluator.html)
+3.  [XPokerEval](https://web.archive.org/web/20111103160502/http://www.codingthewheel.com/archives/poker-hand-evaluator-roundup#2p2)
+4.  [PokerStove](https://github.com/andrewprock/pokerstove)
+

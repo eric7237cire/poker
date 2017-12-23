@@ -89,12 +89,6 @@
   <ItemGroup>
     <Text Include="ABOUT.TXT" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\XPokerEval.CactusKev.PerfectHash\XPokerEval.CactusKev.PerfectHash.vcxproj">
-      <Project>{17f2701d-d627-4385-86d5-59afbb0de31f}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

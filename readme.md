@@ -18,3 +18,18 @@ Looking into poker evaluation libaries:
 3.  [XPokerEval](https://web.archive.org/web/20111103160502/http://www.codingthewheel.com/archives/poker-hand-evaluator-roundup#2p2)
 4.  [PokerStove](https://github.com/andrewprock/pokerstove)
 
+
+Features:
+
+1.  Features lots of contour processing to detect digits and cards
+2.  Captures screenshots in c++ code, passed to python as a numpy RGB array
+3.  Integrated 2+2 Poker evaluation from XPokerEval using a Monte Carlo simulation in a C++ compiled python extension
+
+Built/run in windows using:
+
+1)  Anaconda (included the .h files needed for numpy and python extending)
+2)  Visual Studio Community 2017
+
+Tests are run on travis with a linux environment
+
+

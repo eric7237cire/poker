@@ -213,9 +213,7 @@ def main():
         gi = extract_game_info_from_screenshot(chrome_image_rgb_array, card_classifier, number_reader)
 
         if gi.is_equal(last_gi):
-            # event_exit.wait(.5)
-            for i in range(0, 30):
-                time.sleep(0.1)
+
             continue
 
         print("*" * 80)
@@ -256,8 +254,6 @@ def main():
 
         last_gi = gi
 
-        for i in range(0, 30):
-            time.sleep(0.1)
 
 
 def quit(signo, _frame):

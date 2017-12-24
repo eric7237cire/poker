@@ -23,7 +23,7 @@ def init_logger():
 
     ch = logging.StreamHandler(sys.stdout)
     ch.setLevel(logging.DEBUG)
-    #ch.setLevel(logging.ERROR)
+    ch.setLevel(logging.ERROR)
     #formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
     formatter = logging.Formatter('%(name)s - %(message)s')
@@ -44,11 +44,8 @@ def timeit(method):
         ts = time.time()
         result = method(*args, **kw)
         te = time.time()
-        if 'log_time' in kw:
-            name = kw.get('log_name', method.__name__.upper())
-            kw['log_time'][name] = int((te - ts) * 1000)
-        else:
-            print ('%r  %2.2f ms' % \
+
+        logger.debug ('%r  %2.2f ms' % \
                   (method.__name__, (te - ts) * 1000))
         return result
     return timed
@@ -218,6 +215,7 @@ def find_contours(
 
         if not c.polygon.is_valid:
             logger.warning("Polygon is not valid")
+            continue
 
         # See if any additional contours fit 100% inside
         for idx2 in range(idx+1, len(contour_list)):

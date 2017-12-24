@@ -6,6 +6,8 @@ from card_classifier import CardClassifier
 from number_reader import NumberReader
 from card_util import init_logger
 from get_cards import extract_game_info_from_screenshot
+from PIL import Image
+import numpy as np
 
 card_classifier = CardClassifier()
 
@@ -22,10 +24,17 @@ class TestGetCards(unittest.TestCase):
         self.longMessage = True
         self.UNIT_TEST_DATA_DIR = os.path.join(os.path.dirname(__file__), 'unit_test_data')
 
-    def test_get_cards(self):
-        file_path = os.path.join(self.UNIT_TEST_DATA_DIR, 'screenshot_5cards_1.png')
+    def _get_gi(self,file_path):
+        image = Image.open(file_path)
 
-        gi = extract_game_info_from_screenshot(screenshot_file_path=file_path, card_classifier=card_classifier)
+        image_array = np.array(image)
+
+        return extract_game_info_from_screenshot(screenshot_image_rgb_yx_array=image_array,
+                                                 card_classifier=card_classifier,
+                                                 number_reader=number_reader)
+
+    def test_get_cards(self):
+        gi = self._get_gi(os.path.join(self.UNIT_TEST_DATA_DIR, 'screenshot_5cards_1.png'))
 
         self.assertEqual(gi.common_cards[0], card_classifier.get_card_id('2', 'h'),
                          msg=card_classifier.get_card_string(gi.common_cards[0]))
@@ -35,10 +44,7 @@ class TestGetCards(unittest.TestCase):
         self.assertEqual(gi.common_cards[4], card_classifier.get_card_id('7', 'c'))
 
     def test_get_cards_2(self):
-        file_path = os.path.join(self.UNIT_TEST_DATA_DIR, 'screenshot_5cards_2.png')
-        card_classifier = CardClassifier()
-
-        gi = extract_game_info_from_screenshot(screenshot_file_path=file_path, card_classifier=card_classifier)
+        gi = self._get_gi(os.path.join(self.UNIT_TEST_DATA_DIR, 'screenshot_5cards_2.png'))
 
         self.assertEqual(gi.common_cards[0], card_classifier.get_card_id('7', 'd'),
                          msg=card_classifier.get_card_string(gi.common_cards[0]))
@@ -48,9 +54,7 @@ class TestGetCards(unittest.TestCase):
         self.assertEqual(gi.common_cards[4], card_classifier.get_card_id('4', 'c'))
 
     def test_get_3cards(self):
-        file_path = os.path.join(self.UNIT_TEST_DATA_DIR, 'screenshot_3cards.png')
-
-        gi = extract_game_info_from_screenshot(screenshot_file_path=file_path, card_classifier=card_classifier)
+        gi = self._get_gi(os.path.join(self.UNIT_TEST_DATA_DIR, 'screenshot_3cards.png'))
 
         self.assertEqual(gi.common_cards[0], card_classifier.get_card_id('j', 'd'),
                          msg=card_classifier.get_card_string(gi.common_cards[0]))
@@ -58,9 +62,7 @@ class TestGetCards(unittest.TestCase):
         self.assertEqual(gi.common_cards[2], card_classifier.get_card_id('7', 'c'))
 
     def test_get_cards_blocked(self):
-        file_path = os.path.join(self.UNIT_TEST_DATA_DIR, 'screenshot_blocked_cards.png')
-
-        gi = extract_game_info_from_screenshot(screenshot_file_path=file_path, card_classifier=card_classifier)
+        gi = self._get_gi(os.path.join(self.UNIT_TEST_DATA_DIR, 'screenshot_blocked_cards.png'))
 
         self.assertEqual(gi.common_cards[0], card_classifier.get_card_id('5', 'h'),
                          msg=card_classifier.get_card_string(gi.common_cards[0]))
@@ -69,10 +71,7 @@ class TestGetCards(unittest.TestCase):
         self.assertEqual(gi.common_cards[3], card_classifier.get_card_id('8', 'h'))
 
     def test_get_hole_cards(self):
-        file_path = os.path.join(self.UNIT_TEST_DATA_DIR, 'screenshot_with_hole_cards.png')
-        card_classifier = CardClassifier()
-
-        gi = extract_game_info_from_screenshot(screenshot_file_path=file_path, card_classifier=card_classifier)
+        gi = self._get_gi(os.path.join(self.UNIT_TEST_DATA_DIR, 'screenshot_with_hole_cards.png'))
 
         self.assertEqual(gi.common_cards[0], card_classifier.get_card_id('q', 's'),
                          msg=card_classifier.get_card_string(gi.common_cards[0]))
@@ -85,9 +84,7 @@ class TestGetCards(unittest.TestCase):
                          msg=card_classifier.get_card_string(gi.hole_cards[1]))
 
     def test_get_hole_cards_2(self):
-        file_path = os.path.join(self.UNIT_TEST_DATA_DIR, 'screenshot_with_hole_cards_2.png')
-
-        gi = extract_game_info_from_screenshot(screenshot_file_path=file_path, card_classifier=card_classifier)
+        gi = self._get_gi(os.path.join(self.UNIT_TEST_DATA_DIR, 'screenshot_with_hole_cards_2.png'))
 
         self.assertEqual(gi.common_cards[0], card_classifier.get_card_id('3', 'h'),
                          msg=card_classifier.get_card_string(gi.common_cards[0]))
@@ -101,9 +98,7 @@ class TestGetCards(unittest.TestCase):
                          msg=card_classifier.get_card_string(gi.hole_cards[1]))
 
     def test_get_hole_cards_3(self):
-        file_path = os.path.join(self.UNIT_TEST_DATA_DIR, 'screenshot_with_hole_cards_3.png')
-
-        gi = extract_game_info_from_screenshot(screenshot_file_path=file_path, card_classifier=card_classifier)
+        gi = self._get_gi(os.path.join(self.UNIT_TEST_DATA_DIR, 'screenshot_with_hole_cards_3.png'))
 
         self.assertEqual(gi.common_cards[0], card_classifier.get_card_id('2', 'h'),
                          msg=card_classifier.get_card_string(gi.common_cards[0]))
@@ -119,9 +114,7 @@ class TestGetCards(unittest.TestCase):
                          msg=card_classifier.get_card_string(gi.hole_cards[1]))
 
     def test_get_hole_cards_4(self):
-        file_path = os.path.join(self.UNIT_TEST_DATA_DIR, 'screenshot_with_hole_cards_4.png')
-
-        gi = extract_game_info_from_screenshot(screenshot_file_path=file_path, card_classifier=card_classifier)
+        gi = self._get_gi(os.path.join(self.UNIT_TEST_DATA_DIR, 'screenshot_with_hole_cards_4.png'))
 
         self.assertEqual(gi.common_cards[0], card_classifier.get_card_id('6', 'c'),
                          msg=card_classifier.get_card_string(gi.common_cards[0]))
@@ -135,10 +128,7 @@ class TestGetCards(unittest.TestCase):
                          msg=card_classifier.get_card_string(gi.hole_cards[1]))
 
     def test_get_hole_cards_5(self):
-        file_path = os.path.join(self.UNIT_TEST_DATA_DIR, 'screenshot_with_hole_cards_5.png')
-
-        gi = extract_game_info_from_screenshot(screenshot_file_path=file_path, card_classifier=card_classifier
-                                               )
+        gi = self._get_gi(os.path.join(self.UNIT_TEST_DATA_DIR, 'screenshot_with_hole_cards_5.png'))
 
         self.assertEqual(gi.common_cards[0], card_classifier.get_card_id('t', 's'),
                          msg=card_classifier.get_card_string(gi.common_cards[0]))
@@ -154,10 +144,8 @@ class TestGetCards(unittest.TestCase):
                          msg=card_classifier.get_card_string(gi.hole_cards[1]))
 
     def test_bet(self):
-        file_path = os.path.join(self.UNIT_TEST_DATA_DIR, 'bet.png')
+        gi = self._get_gi(os.path.join(self.UNIT_TEST_DATA_DIR, 'bet.png'))
 
-        gi = extract_game_info_from_screenshot(screenshot_file_path=file_path, card_classifier=card_classifier,
-                                               number_reader=number_reader)
 
         self.assertEqual(gi.common_cards[0], card_classifier.get_card_id('3', 'd'),
                          msg=card_classifier.get_card_string(gi.common_cards[0]))
@@ -178,10 +166,7 @@ class TestGetCards(unittest.TestCase):
         self.assertEqual(90000 + 12000, gi.pot)
 
     def test_bet2(self):
-        file_path = os.path.join(self.UNIT_TEST_DATA_DIR, 'bet2.png')
-
-        gi = extract_game_info_from_screenshot(screenshot_file_path=file_path, card_classifier=card_classifier,
-                                               number_reader=number_reader)
+        gi = self._get_gi(os.path.join(self.UNIT_TEST_DATA_DIR, 'bet2.png'))
 
         self.assertEqual(gi.common_cards[0], card_classifier.get_card_id('6', 'd'),
                          msg=card_classifier.get_card_string(gi.common_cards[0]))
@@ -202,10 +187,7 @@ class TestGetCards(unittest.TestCase):
         self.assertEqual(2000 + 1000 + 2000, gi.pot)
 
     def test_bet3(self):
-        file_path = os.path.join(self.UNIT_TEST_DATA_DIR, 'bet3.png')
-
-        gi = extract_game_info_from_screenshot(screenshot_file_path=file_path, card_classifier=card_classifier,
-                                               number_reader=number_reader)
+        gi = self._get_gi(os.path.join(self.UNIT_TEST_DATA_DIR, 'bet3.png'))
 
         self.assertEqual(0, len(gi.common_cards))
 
@@ -219,10 +201,7 @@ class TestGetCards(unittest.TestCase):
         self.assertEqual(200246 + 2000 + 4123, gi.pot)
 
     def test_bet4(self):
-        file_path = os.path.join(self.UNIT_TEST_DATA_DIR, 'bet4.png')
-
-        gi = extract_game_info_from_screenshot(screenshot_file_path=file_path, card_classifier=card_classifier,
-                                               number_reader=number_reader)
+        gi = self._get_gi(os.path.join(self.UNIT_TEST_DATA_DIR, 'bet4.png'))
 
         self.assertEqual(0, len(gi.common_cards))
 
@@ -239,10 +218,7 @@ class TestGetCards(unittest.TestCase):
         """
         Tests pot amounts with side pots
         """
-        file_path = os.path.join(self.UNIT_TEST_DATA_DIR, 'bet5.png')
-
-        gi = extract_game_info_from_screenshot(screenshot_file_path=file_path, card_classifier=card_classifier,
-                                               number_reader=number_reader)
+        gi = self._get_gi(os.path.join(self.UNIT_TEST_DATA_DIR, 'bet5.png'))
 
         self.assertEqual(0, len(gi.common_cards))
 
@@ -258,10 +234,7 @@ class TestGetCards(unittest.TestCase):
         self.assertEqual(394000 + 400000 + 2000 + 1000, gi.pot)
 
     def test_bet6(self):
-        file_path = os.path.join(self.UNIT_TEST_DATA_DIR, 'bet6.png')
-
-        gi = extract_game_info_from_screenshot(screenshot_file_path=file_path, card_classifier=card_classifier,
-                                               number_reader=number_reader)
+        gi = self._get_gi(os.path.join(self.UNIT_TEST_DATA_DIR, 'bet6.png'))
 
         self.assertEqual(gi.common_cards[0], card_classifier.get_card_id('9', 'd'),
                          msg=card_classifier.get_card_string(gi.common_cards[0]))
@@ -282,10 +255,7 @@ class TestGetCards(unittest.TestCase):
         self.assertEqual(1202000 + 64000, gi.pot)
 
     def test_bet7(self):
-        file_path = os.path.join(self.UNIT_TEST_DATA_DIR, 'bet7.png')
-
-        gi = extract_game_info_from_screenshot(screenshot_file_path=file_path, card_classifier=card_classifier,
-                                               number_reader=number_reader)
+        gi = self._get_gi(os.path.join(self.UNIT_TEST_DATA_DIR, 'bet7.png'))
 
         self.assertEqual(0, len(gi.common_cards))
 
@@ -300,10 +270,7 @@ class TestGetCards(unittest.TestCase):
         self.assertEqual(2000 + 37044 + 37044, gi.pot)
 
     def test_cards_1(self):
-        file_path = os.path.join(self.UNIT_TEST_DATA_DIR, 'cards1.png')
-
-        gi = extract_game_info_from_screenshot(screenshot_file_path=file_path, card_classifier=card_classifier,
-                                               number_reader=number_reader)
+        gi = self._get_gi(os.path.join(self.UNIT_TEST_DATA_DIR, 'cards1.png'))
 
         self.assertEqual(gi.common_cards[0], card_classifier.get_card_id('q', 'c'),
                          msg=card_classifier.get_card_string(gi.common_cards[0]))

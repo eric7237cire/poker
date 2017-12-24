@@ -10,9 +10,16 @@ test_array = poker.take_screenshot()
 
 print(test_array.shape)
 print(test_array.dtype)
+
 print(test_array)
 
 print(test_array[49][19])
 print(test_array[48][18])
+
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
+
+plt.imshow(test_array)
+plt.show()
 
 

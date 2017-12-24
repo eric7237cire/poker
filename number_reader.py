@@ -197,7 +197,7 @@ class NumberReader(object):
                                     min_height=9,
                                     # Sometimes green chips can make height larger
                                     max_height=35,
-                                    #display=True
+                                    display=False
                                     )
 
         bet_bubbles = sorted(bet_bubbles, key=lambda x: x.bounding_box.min_x)

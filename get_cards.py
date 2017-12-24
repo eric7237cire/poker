@@ -3,7 +3,7 @@ import logging
 import os
 import shutil
 from datetime import datetime
-import poker
+
 import cv2
 import numpy as np
 from PIL import Image
@@ -11,7 +11,7 @@ import time
 from threading import Event
 from card_classifier import CardClassifier
 from card_util import get_game_area_as_2d_array, find_contours_with_cv, \
-    get_black_and_white_image, init_logger, clip_and_save, timeit
+    get_black_and_white_image, init_logger, clip_and_save, timeit, trim_main_window_image_array
 from configuration import Config as cfg
 from get_screenshot import capture_screenshot
 from number_reader import NumberReader
@@ -91,15 +91,24 @@ def get_hole_cards(game_area_image_array, card_classifier, game_info):
 
 
 @timeit
-def find_common_cards(screenshot_file_path, card_classifier, gi):
-    image = cv2.imread(screenshot_file_path)
+def find_common_cards(screenshot_rgb_yx_array, card_classifier, gi):
+    #image = cv2.imread(screenshot_file_path)
 
-    image = image[400:600, 275:600]  # Crop from x, y, w, h -> 100, 200, 300, 400
+    image = cv2.cvtColor(screenshot_rgb_yx_array, cv2.COLOR_RGB2BGR)
+
+    if False:
+        cv2.imshow('image', image)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+
+    image = image[125:215, 240:600]  # Crop from x, y, w, h -> 100, 200, 300, 400
     # NOTE: its img[y: y + h, x: x + w] and *not* img[x: x + w, y: y + h]
 
-    # cv2.imshow('image', image)
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
+    if False:
+        cv2.imshow('image', image)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+
     # display_cv2_image_with_contours(image, [])
 
     bw = get_black_and_white_image(image)
@@ -129,14 +138,16 @@ def find_common_cards(screenshot_file_path, card_classifier, gi):
         if h < cfg.CARD_HEIGHT_PIXELS - 5 or h > cfg.CARD_HEIGHT_PIXELS + 15:
             continue
 
-        clip_and_save(
-            p_orig_image=image_copy,
-            x=x,
-            y=y,
-            w=cfg.CARD_WIDTH_PIXELS,
-            h=cfg.CARD_HEIGHT_PIXELS,
-            file_name=f"sub_image_{idx:04}.png"
-        )
+        if False:
+            # dont need to save card images anymore
+            clip_and_save(
+                p_orig_image=image_copy,
+                x=x,
+                y=y,
+                w=cfg.CARD_WIDTH_PIXELS,
+                h=cfg.CARD_HEIGHT_PIXELS,
+                file_name=f"sub_image_{idx:04}.png"
+            )
 
         crop_img = image_array[y:y + cfg.CARD_HEIGHT_PIXELS + 1,
                    x:x + cfg.CARD_WIDTH_PIXELS + 1]
@@ -151,11 +162,11 @@ def find_common_cards(screenshot_file_path, card_classifier, gi):
 
 
 @timeit
-def extract_game_info_from_screenshot(screenshot_file_path, card_classifier, number_reader=None):
-    logger.info(f"Starting catpure of {screenshot_file_path}")
+def extract_game_info_from_screenshot(screenshot_image_rgb_yx_array, card_classifier, number_reader=None):
+    logger.info(f"Starting catpure of {screenshot_image_rgb_yx_array.shape}")
     gi = GameInfo()
 
-    game_area_image_array = get_game_area_as_2d_array(screenshot_file_path)
+    game_area_image_array = trim_main_window_image_array(screenshot_image_rgb_yx_array)
 
     if number_reader is not None:
 
@@ -177,7 +188,8 @@ def extract_game_info_from_screenshot(screenshot_file_path, card_classifier, num
                    card_classifier=card_classifier,
                    game_info=gi)
 
-    find_common_cards(screenshot_file_path=screenshot_file_path, card_classifier=card_classifier, gi=gi)
+    find_common_cards(screenshot_rgb_yx_array=game_area_image_array,
+                      card_classifier=card_classifier, gi=gi)
 
     # display_cv2_image_with_contours(bw, cnts)
     return gi
@@ -185,8 +197,13 @@ def extract_game_info_from_screenshot(screenshot_file_path, card_classifier, num
 
 event_exit = Event()
 
+@timeit
+def get_poker_image_rgb_yx_array():
+    return poker.take_screenshot()
 
 def main():
+    import poker
+
     init_logger()
 
     card_classifier = CardClassifier()
@@ -211,8 +228,10 @@ def main():
     last_gi = None
     for i in range(0, iterations):
 
-        file_path = os.path.join(cfg.SCREENSHOTS_PATH, 'screenshot_{}.png'.format(formatted_time))
-        capture_screenshot("chrome", output_file_path=file_path)
+        #file_path = os.path.join(cfg.SCREENSHOTS_PATH, 'screenshot_{}.png'.format(formatted_time))
+        #capture_screenshot("chrome", output_file_path=file_path)
+
+        chrome_image_rgb_array = get_poker_image_rgb_yx_array()
 
         gi = extract_game_info_from_screenshot(file_path, card_classifier, number_reader)
 

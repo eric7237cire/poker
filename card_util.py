@@ -140,12 +140,7 @@ def card_to_grayscale_2d_array(image):
     return grey_array
 
 
-@timeit
-def get_game_area_as_2d_array(screenshot_file_path):
-    image = Image.open(screenshot_file_path)
-
-    image_array = np.array(image)
-
+def trim_main_window_image_array(image_array):
     image_array = image_array[cfg.ZYNGA_WINDOW.min_y:cfg.ZYNGA_WINDOW.max_y,
                   cfg.ZYNGA_WINDOW.min_x:]
 
@@ -162,6 +157,15 @@ def get_game_area_as_2d_array(screenshot_file_path):
     image_array = image_array[:, left_index:]
 
     return image_array
+
+@timeit
+def get_game_area_as_2d_array(screenshot_file_path):
+    image = Image.open(screenshot_file_path)
+
+    image_array = np.array(image)
+
+    return trim_main_window_image_array(image_array)
+
 
 def find_contours(
         grey_array, min_width=5, max_width=15,

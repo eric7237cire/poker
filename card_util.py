@@ -22,8 +22,8 @@ def init_logger():
     root.setLevel(logging.DEBUG)
 
     ch = logging.StreamHandler(sys.stdout)
-    #ch.setLevel(logging.INFO)
-    ch.setLevel(logging.ERROR)
+    ch.setLevel(logging.DEBUG)
+    #ch.setLevel(logging.ERROR)
     #formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
     formatter = logging.Formatter('%(name)s - %(message)s')
@@ -31,8 +31,13 @@ def init_logger():
     root.addHandler(ch)
 
     logging.getLogger("PIL.PngImagePlugin").setLevel(logging.INFO)
-    logging.getLogger("card_classifier_trace").setLevel(logging.INFO)
-    logging.getLogger("number_reader").setLevel(logging.INFO)
+
+    if False:
+        logging.getLogger("card_classifier_trace").setLevel(logging.INFO)
+        logging.getLogger("number_reader").setLevel(logging.INFO)
+
+
+
 
 def timeit(method):
     def timed(*args, **kw):
@@ -158,7 +163,7 @@ def trim_main_window_image_array(image_array):
 
     return image_array
 
-@timeit
+
 def get_game_area_as_2d_array(screenshot_file_path):
     image = Image.open(screenshot_file_path)
 

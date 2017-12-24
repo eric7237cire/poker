@@ -5,7 +5,7 @@ import logging
 from get_card_suit_and_number import get_suit_and_number
 from configuration import Config as cfg
 import numpy as np
-from card_util import diff_polygons, display_image_with_contours
+from card_util import diff_polygons, display_image_with_contours, card_to_grayscale_2d_array
 from PIL import Image
 import os
 
@@ -14,10 +14,10 @@ trace_logger = logging.getLogger(__name__ + "_trace")
 
 class Card(object):
 
-    def __init__(self, card_index, card_file_name, card_image):
+    def __init__(self, card_index, card_file_name, card_grey_image_array):
         self.card_id = card_index
         self.card_file_name = card_file_name
-        self.card_image = card_image
+        self.card_grey_image_array = card_grey_image_array
 
         # Contour objects
         self.suit_image = None
@@ -103,14 +103,16 @@ class CardClassifier(object):
 
             trace_logger.debug("Label is {} for file name {}".format(label, file_name))
 
-            card = Card(card_index=label, card_file_name=file_name, card_image=image)
+            grey_image_array = card_to_grayscale_2d_array(image)
+
+            card = Card(card_index=label, card_file_name=file_name, card_grey_image_array=grey_image_array)
 
             if file_name[2] == '_':
                 self.cards_to_eval.append(card)
             else:
                 self.test_cards.append(card)
 
-            card.suit_image, card.number_image = get_suit_and_number(image, clip_bottom=False)
+            card.suit_image, card.number_image = get_suit_and_number(grey_image_array, clip_bottom=False)
 
             cards.append(card)
 
@@ -126,33 +128,33 @@ class CardClassifier(object):
             # if i > 0 and i % 1000 == 0:
             trace_logger.debug("[INFO] processed {}/{}".format(i, len(image_paths)))
 
-    def evaluate_hole_card_image(self, hole_card_image):
+    def evaluate_hole_card_image_array(self, hole_card_image_array):
 
-        card1 = Card(card_index=None, card_file_name=None, card_image=hole_card_image)
-        card2 = Card(card_index=None, card_file_name=None, card_image=hole_card_image)
+        card1 = Card(card_index=None, card_file_name=None, card_grey_image_array=hole_card_image_array)
+        card2 = Card(card_index=None, card_file_name=None, card_grey_image_array=hole_card_image_array)
 
         card1.suit_image, card1.number_image, card2.suit_image, card2.number_image = \
-            get_suit_and_number(hole_card_image, has_2_cards=True)
+            get_suit_and_number(hole_card_image_array, has_2_cards=True, display=False)
 
         if False:
             # Use to debug hole card detection
             c1 = self.get_test_card('9', 's')
             c2 = self.get_test_card('9', 'd')
 
-            display_image_with_contours(np.array(hole_card_image), [
+            display_image_with_contours(np.array(hole_card_image_array), [
                 card1.number_image.points_array, card1.suit_image.points_array,
                 c1.number_image.points_array, c2.suit_image.points_array
             ])
 
         return self.evaluate_suit_and_number_images(card1, scale_polygons=True), self.evaluate_suit_and_number_images(card2, scale_polygons=True)
 
-    def evaluate_card(self, card_image, display=False):
-        card = Card(card_index=None, card_file_name=None, card_image=card_image)
-        card.suit_image, card.number_image = get_suit_and_number(card_image)
+    def evaluate_card(self, card_grey_image_array, display=False):
+        card = Card(card_index=None, card_file_name=None, card_grey_image_array=card_grey_image_array)
+        card.suit_image, card.number_image = get_suit_and_number(card_grey_image_array)
 
         if display:
-            display_image_with_contours(np.array(card_image), [card.suit_image.points_array,
-                                                                     card.number_image.points_array])
+            display_image_with_contours(np.array(card_grey_image_array), [card.suit_image.points_array,
+                                                                          card.number_image.points_array])
 
         return self.evaluate_suit_and_number_images(card)
 

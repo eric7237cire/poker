@@ -11,12 +11,14 @@ import time
 from threading import Event
 from card_classifier import CardClassifier
 from card_util import get_game_area_as_2d_array, find_contours_with_cv, \
-    get_black_and_white_image, init_logger, clip_and_save, timeit, trim_main_window_image_array
+    get_black_and_white_image, init_logger, clip_and_save, timeit, trim_main_window_image_array, \
+    rgb_yx_array_to_grayscale, find_contours, display_image_with_contours
 from configuration import Config as cfg
 from get_screenshot import capture_screenshot
 from number_reader import NumberReader
 import sys
 from scipy.special import comb
+
 
 logger = logging.getLogger(__name__)
 trace_logger = logging.getLogger(__name__ + "_trace")
@@ -78,11 +80,11 @@ class GameInfo(object):
 def get_hole_cards(game_area_image_array, card_classifier, game_info):
     image_array = cfg.HERO_PLAYER_HOLE_CARDS_LOC.clip_2d_array(game_area_image_array)
 
-    # show_image(image_array)
+    #display_image_with_contours(image_array, [])
 
-    cropped_image = Image.fromarray(image_array)
+    grey_array = rgb_yx_array_to_grayscale(image_array)
 
-    game_info.hole_cards = card_classifier.evaluate_hole_card_image(cropped_image)
+    game_info.hole_cards = card_classifier.evaluate_hole_card_image_array(grey_array)
 
     logger.info("Found hole card {} and {}".format(
         card_classifier.get_card_string(game_info.hole_cards[0]),
@@ -94,66 +96,40 @@ def get_hole_cards(game_area_image_array, card_classifier, game_info):
 def find_common_cards(screenshot_rgb_yx_array, card_classifier, gi):
     #image = cv2.imread(screenshot_file_path)
 
-    image = cv2.cvtColor(screenshot_rgb_yx_array, cv2.COLOR_RGB2BGR)
+    #image = cv2.cvtColor(screenshot_rgb_yx_array, cv2.COLOR_RGB2BGR)
 
-    if False:
-        cv2.imshow('image', image)
-        cv2.waitKey(0)
-        cv2.destroyAllWindows()
 
-    image = image[125:215, 240:600]  # Crop from x, y, w, h -> 100, 200, 300, 400
+    bw  = rgb_yx_array_to_grayscale(screenshot_rgb_yx_array[125:190, 240:550])
     # NOTE: its img[y: y + h, x: x + w] and *not* img[x: x + w, y: y + h]
 
     if False:
-        cv2.imshow('image', image)
+        cv2.imshow('image', bw)
         cv2.waitKey(0)
         cv2.destroyAllWindows()
 
     # display_cv2_image_with_contours(image, [])
 
-    bw = get_black_and_white_image(image)
-    cnts = find_contours_with_cv(bw)
+    #bw = get_black_and_white_image(image)
+    #cnts = find_contours_with_cv(bw)
+    cnts = find_contours(bw, min_width= cfg.CARD_WIDTH_PIXELS - 5,
+                         max_width=cfg.CARD_WIDTH_PIXELS + 15,
+                         min_height=cfg.CARD_HEIGHT_PIXELS - 15,
+                         max_height=cfg.CARD_HEIGHT_PIXELS + 15,
+                         display=False)
 
-    image_copy = image.copy()
+    contours_list = list(cnts)
+    #display_image_with_contours(bw, [c.points_array for c in contours_list])
 
-    image_array = np.array(image)
-
-    def get_contour_sort_key(p_contour):
-        x, y, w, h = cv2.boundingRect(p_contour)
-        return x
-
-    cnts = sorted(cnts, key=get_contour_sort_key)
+    image_array = bw
 
     # loop over the contours individually
-    for idx, contour in enumerate(cnts):
-        # if the contour is not sufficiently large, ignore it
-        if cv2.contourArea(contour) < 10:
-            continue
+    for idx, contour in enumerate(contours_list):
 
-        x, y, w, h = cv2.boundingRect(contour)
+        y = contour.bounding_box
+        crop_img = contour.bounding_box.clip_2d_array(image_array)
+        #card_image = Image.fromarray(crop_img)
 
-        if w < cfg.CARD_WIDTH_PIXELS - 5 or w > cfg.CARD_WIDTH_PIXELS + 15:
-            continue
-
-        if h < cfg.CARD_HEIGHT_PIXELS - 5 or h > cfg.CARD_HEIGHT_PIXELS + 15:
-            continue
-
-        if False:
-            # dont need to save card images anymore
-            clip_and_save(
-                p_orig_image=image_copy,
-                x=x,
-                y=y,
-                w=cfg.CARD_WIDTH_PIXELS,
-                h=cfg.CARD_HEIGHT_PIXELS,
-                file_name=f"sub_image_{idx:04}.png"
-            )
-
-        crop_img = image_array[y:y + cfg.CARD_HEIGHT_PIXELS + 1,
-                   x:x + cfg.CARD_WIDTH_PIXELS + 1]
-        card_image = Image.fromarray(crop_img)
-
-        c = card_classifier.evaluate_card(card_image)
+        c = card_classifier.evaluate_card(crop_img)
 
         logger.info(f"Classified extracted image #{idx} as {card_classifier.get_card_string(c)}")
 
@@ -199,6 +175,7 @@ event_exit = Event()
 
 @timeit
 def get_poker_image_rgb_yx_array():
+    import poker
     return poker.take_screenshot()
 
 def main():
@@ -233,7 +210,7 @@ def main():
 
         chrome_image_rgb_array = get_poker_image_rgb_yx_array()
 
-        gi = extract_game_info_from_screenshot(file_path, card_classifier, number_reader)
+        gi = extract_game_info_from_screenshot(chrome_image_rgb_array, card_classifier, number_reader)
 
         if gi.is_equal(last_gi):
             # event_exit.wait(.5)

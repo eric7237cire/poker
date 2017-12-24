@@ -3,7 +3,7 @@ import os
 from PIL import Image
 import numpy as np
 from configuration import Config as cfg
-from card_util import card_to_grayscale_2d_array, find_contours
+from card_util import card_to_grayscale_2d_array, find_contours, display_image_with_contours
 
 logger = logging.getLogger(__name__)
 
@@ -55,27 +55,27 @@ def main2():
     image = Image.open(file_path)
 
 
-def get_suit_and_number(image, has_2_cards=False, clip_bottom=True):
+def get_suit_and_number(card_grey_image_array, has_2_cards=False, clip_bottom=True, display=False):
     """
     Takes a PIL.Image
     :param image:
     :return: Suit card contour object and number card contour object
     """
-    grey_array = card_to_grayscale_2d_array(image)
+    grey_array = card_grey_image_array
 
     if not has_2_cards and clip_bottom:
         # chips can cover up bottom
         grey_array = grey_array[0:28, :]
 
-    card_contours = []
-
-    for idx, contour in enumerate(find_contours(
+    card_contours = list(find_contours(
             grey_array=grey_array,
             min_width=5,
-            max_width=15)):
-        card_contours.append(contour)
+            max_width=15,
+        display=display
+    ))
 
-    #display_image_with_contours(grey_array, [c.points_array for c in card_contours])
+    if display:
+        display_image_with_contours(grey_array, [c.points_array for c in card_contours])
 
     if has_2_cards:
         #

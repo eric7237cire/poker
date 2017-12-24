@@ -36,6 +36,7 @@ class Contour(object):
 
         if len(self.points_array) >= 4:
             self.polygon = Polygon(self.get_contour_xy())
+            #self.polygon = self.polygon.simplify(tolerance=0.2, preserve_topology=False)
         else:
             self.polygon = None
 

@@ -10,11 +10,11 @@ from PIL import Image
 import time
 from threading import Event
 from card_classifier import CardClassifier
-from card_util import get_game_area_as_2d_array, find_contours_with_cv, \
-    get_black_and_white_image, init_logger, clip_and_save, timeit, trim_main_window_image_array, \
+from card_util import get_game_area_as_2d_array, \
+    init_logger, clip_and_save, timeit, trim_main_window_image_array, \
     rgb_yx_array_to_grayscale, find_contours, display_image_with_contours
 from configuration import Config as cfg
-from get_screenshot import capture_screenshot
+
 from number_reader import NumberReader
 import sys
 from scipy.special import comb

@@ -88,30 +88,6 @@ def diff_polygons(contour_1, contour_2, scale_polygons=True):
     return poly1.area + poly2.area - 2 * intersecting_area
 
 
-def display_cv2_image_with_contours(grey_array, contours):
-    # Display the image and plot all contours found
-    fig, ax = plt.subplots(1)
-
-    if grey_array is not None:
-        ax.imshow(grey_array, interpolation='bicubic', cmap=plt.cm.gray)
-
-    # ax2 = fig.add_subplot(111, aspect='equal')
-    for n, contour in enumerate(contours):
-        x, y, w, h = cv2.boundingRect(contour)
-        ax.add_patch(patches.Rectangle(
-            xy=(x, y),
-            width=w,
-            height=h,
-            fill=False,
-            linewidth=1,
-            edgecolor='g'
-        ))
-
-    ax.axis('image')
-    ax.set_xticks([])
-    ax.set_yticks([])
-    plt.show()
-
 
 def display_image_with_contours(grey_array, contours):
     # Display the image and plot all contours found
@@ -311,21 +287,7 @@ def extract_image_with_mask(image, boolean_mask, background_color):
     return r_image
 
 
-def find_contours_with_cv(image):
-    cnts = cv2.findContours(image, cv2.RETR_EXTERNAL,
-                            cv2.CHAIN_APPROX_SIMPLE)
-    cnts = cnts[0] if imutils.is_cv2() else cnts[1]
 
-    return cnts
-
-
-def get_black_and_white_image(image):
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-    # Will set everything below 200 to black, above to 255 (maxval/white)
-    flag, thresh = cv2.threshold(gray, thresh=200, maxval=255, type=cv2.THRESH_BINARY)
-
-    return thresh
 
 
 def clip_and_save(p_orig_image, x, y, w, h, file_name):

@@ -9,16 +9,20 @@ from get_cards import extract_game_info_from_screenshot
 from PIL import Image
 import numpy as np
 
-card_classifier = CardClassifier()
-
-number_reader = NumberReader()
-
+card_classifier = None
+number_reader = None
 
 class TestGetCards(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
         init_logger()
+
+        global card_classifier
+        global number_reader
+        card_classifier = CardClassifier()
+
+        number_reader = NumberReader()
 
     def setUp(self):
         self.longMessage = True

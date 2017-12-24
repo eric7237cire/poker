@@ -3,7 +3,8 @@ import os
 from PIL import Image
 import numpy as np
 from configuration import Config as cfg
-from card_util import card_to_grayscale_2d_array, find_contours, display_image_with_contours
+from card_util import card_to_grayscale_2d_array, find_contours, display_image_with_contours, timeit
+from concurrent.futures import ThreadPoolExecutor
 
 logger = logging.getLogger(__name__)
 
@@ -54,10 +55,9 @@ def main2():
     # image = cv2.imread(file_path)
     image = Image.open(file_path)
 
-
 def get_suit_and_number(card_grey_image_array, has_2_cards=False, clip_bottom=True, display=False):
     """
-    Takes a PIL.Image
+
     :param image:
     :return: Suit card contour object and number card contour object
     """

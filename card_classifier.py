@@ -5,9 +5,12 @@ import logging
 from get_card_suit_and_number import get_suit_and_number
 from configuration import Config as cfg
 import numpy as np
-from card_util import diff_polygons, display_image_with_contours, card_to_grayscale_2d_array
+from card_util import diff_polygons, display_image_with_contours, \
+    card_to_grayscale_2d_array, timeit
 from PIL import Image
 import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 
 logger = logging.getLogger(__name__)
 trace_logger = logging.getLogger(__name__ + "_trace")
@@ -155,15 +158,26 @@ class CardClassifier(object):
         if display:
             display_image_with_contours(np.array(card_grey_image_array), [card.suit_image.points_array,
                                                                           card.number_image.points_array])
-
+        #Most of the time is here
         return self.evaluate_suit_and_number_images(card)
 
+    #@timeit
     def evaluate_suit_and_number_images(self, card, scale_polygons=False):
 
         if card.number_image is None:
             return None
 
-        card_diffs = [diff_images(card, t, scale_polygons=scale_polygons) for t in self.test_cards]
+        if True:
+            with ThreadPoolExecutor(max_workers=8) as executor:
+                diff_args = [[card, t, scale_polygons] for t in self.test_cards]
+
+                #print(diff_args)
+
+                results = executor.map(lambda p: diff_images(*p), diff_args )
+
+            card_diffs = list(results)
+        else:
+            card_diffs = [diff_images(card, t, scale_polygons=scale_polygons) for t in self.test_cards]
 
         # index = np.argmin(card_diffs, axis=0)
         index = np.argmin(card_diffs, axis=0)

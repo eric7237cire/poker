@@ -112,6 +112,10 @@ class NumberReader(object):
 
         digit_group_contours = list(digit_group_contours)
 
+        if False:
+            display_image_with_contours(chips_image_grey_array,
+                                    [c.points_array for c in digit_group_contours])
+
         chips_image_grey_array = self.add_spaces_to_digits(
             image_grey_array=chips_image_grey_array,
             digit_group_contours=digit_group_contours
@@ -140,6 +144,8 @@ class NumberReader(object):
             return
 
         right_x = np.max(digit_group_contours[-1].points_array[:, 1])
+        left_dollar_sign = np.min(digit_group_contours[-1].points_array[:, 1])
+
         left_x = np.min(digit_group_contours[0].points_array[:, 1])
 
         if digit_width == 6:
@@ -148,8 +154,13 @@ class NumberReader(object):
             right_x = int(round(right_x))
         left_x = int(round(left_x))
 
-        # account for the $ sign and an extra space
-        x_to_insert_blank_line = right_x - digit_width - 1
+
+        if right_x-left_dollar_sign > 2*digit_width:
+            # we didn't actually detect a $ sign, so we just assume the right most group are 3 digits
+            x_to_insert_blank_line = right_x
+        else:
+            # account for the $ sign and an extra space
+            x_to_insert_blank_line = right_x - digit_width - 1
 
         seps_added = 0
         while x_to_insert_blank_line > left_x:

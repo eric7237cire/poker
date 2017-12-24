@@ -1,4 +1,5 @@
 import os
+from card_util import timeit
 
 if os.name == 'nt':
     from PIL import ImageGrab
@@ -10,7 +11,7 @@ toplist, winlist = [], []
 def enum_cb(hwnd, results):
     winlist.append((hwnd, win32gui.GetWindowText(hwnd)))
 
-
+@timeit
 def capture_screenshot(windows_title, output_file_path):
     win32gui.EnumWindows(enum_cb, toplist)
 

@@ -4,7 +4,7 @@ import os
 import logging
 from configuration import Config as cfg
 from card_util import get_game_area_as_2d_array, rgb_yx_array_to_grayscale, \
-    find_contours, diff_polygons, display_image_with_contours
+    find_contours, diff_polygons, display_image_with_contours, timeit
 import numpy as np
 
 logger = logging.getLogger(__name__)
@@ -97,6 +97,7 @@ class NumberReader(object):
 
         return starting_pot_value
 
+    @timeit
     def get_hero_chips_remaining(self, game_area_image_array):
         chips_image_array = cfg.HERO_REMAINING_CHIPS_AREA.clip_2d_array(game_area_image_array)
         #display_image_with_contours(chips_image_array, contours=[])
@@ -167,6 +168,7 @@ class NumberReader(object):
 
         return image_grey_array
 
+    @timeit
     def get_bets(self, game_area_image_array):
 
         bet_image_array = cfg.BETS_AREA.clip_2d_array(game_area_image_array)

@@ -11,7 +11,7 @@ from PIL import Image
 from matplotlib.path import Path
 from shapely.affinity import translate, scale
 from skimage import measure
-
+import time
 from configuration import Config as cfg
 from dto import BoundingBox, Contour
 
@@ -33,6 +33,20 @@ def init_logger():
     logging.getLogger("PIL.PngImagePlugin").setLevel(logging.INFO)
     logging.getLogger("card_classifier_trace").setLevel(logging.INFO)
     logging.getLogger("number_reader").setLevel(logging.INFO)
+
+def timeit(method):
+    def timed(*args, **kw):
+        ts = time.time()
+        result = method(*args, **kw)
+        te = time.time()
+        if 'log_time' in kw:
+            name = kw.get('log_name', method.__name__.upper())
+            kw['log_time'][name] = int((te - ts) * 1000)
+        else:
+            print ('%r  %2.2f ms' % \
+                  (method.__name__, (te - ts) * 1000))
+        return result
+    return timed
 
 def diff_polygons(contour_1, contour_2, scale_polygons=True):
     """
@@ -126,7 +140,7 @@ def card_to_grayscale_2d_array(image):
     return grey_array
 
 
-
+@timeit
 def get_game_area_as_2d_array(screenshot_file_path):
     image = Image.open(screenshot_file_path)
 

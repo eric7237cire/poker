@@ -11,15 +11,15 @@ import time
 from threading import Event
 from card_classifier import CardClassifier
 from card_util import get_game_area_as_2d_array, find_contours_with_cv, \
-    get_black_and_white_image, init_logger, clip_and_save
+    get_black_and_white_image, init_logger, clip_and_save, timeit
 from configuration import Config as cfg
 from get_screenshot import capture_screenshot
 from number_reader import NumberReader
 import sys
 from scipy.special import comb
+
 logger = logging.getLogger(__name__)
 trace_logger = logging.getLogger(__name__ + "_trace")
-
 
 
 def get_out_odds(len_common_cards, n_outs, n_chances):
@@ -29,7 +29,7 @@ def get_out_odds(len_common_cards, n_outs, n_chances):
     num = comb(N=n_outs, k=n_chances, exact=False, repetition=False)
 
     if n_chances == 2:
-        num += n_outs * (cards_left-n_outs)
+        num += n_outs * (cards_left - n_outs)
     return 100.0 * (num / denom)
 
 
@@ -38,6 +38,7 @@ def perc_to_odds_to_1(perc):
     right = left / perc
 
     return right
+
 
 class GameInfo(object):
 
@@ -73,6 +74,7 @@ class GameInfo(object):
         return True
 
 
+@timeit
 def get_hole_cards(game_area_image_array, card_classifier, game_info):
     image_array = cfg.HERO_PLAYER_HOLE_CARDS_LOC.clip_2d_array(game_area_image_array)
 
@@ -88,32 +90,8 @@ def get_hole_cards(game_area_image_array, card_classifier, game_info):
     ))
 
 
-def extract_game_info_from_screenshot(screenshot_file_path, card_classifier, number_reader=None):
-    logger.info(f"Starting catpure of {screenshot_file_path}")
-    gi = GameInfo()
-
-    game_area_image_array = get_game_area_as_2d_array(screenshot_file_path)
-
-    if number_reader is not None:
-
-        bets = number_reader.get_bets(game_area_image_array.copy())
-        gi.to_call = 0
-        gi.chips_remaining = number_reader.get_hero_chips_remaining(game_area_image_array.copy())
-
-        if len(bets) > 0 and gi.chips_remaining is not None:
-            gi.to_call = min(np.max(bets[1:]), gi.chips_remaining+bets[0]) - bets[0]
-
-        gi.pot_starting = number_reader.get_starting_pot(game_area_image_array.copy())
-
-        if gi.chips_remaining is not None:
-            gi.pot = gi.pot_starting + np.sum(  [ min(gi.chips_remaining+bets[0], b) for b in bets])
-
-        logger.info(f"Starting Pot: {gi.pot_starting}\nTotal Pot: {gi.pot}\nTo Call: {gi.to_call}")
-
-    get_hole_cards(game_area_image_array=game_area_image_array,
-                   card_classifier=card_classifier,
-                   game_info=gi)
-
+@timeit
+def find_common_cards(screenshot_file_path, card_classifier, gi):
     image = cv2.imread(screenshot_file_path)
 
     image = image[400:600, 275:600]  # Crop from x, y, w, h -> 100, 200, 300, 400
@@ -171,10 +149,42 @@ def extract_game_info_from_screenshot(screenshot_file_path, card_classifier, num
         if c is not None:
             gi.common_cards.append(c)
 
+
+@timeit
+def extract_game_info_from_screenshot(screenshot_file_path, card_classifier, number_reader=None):
+    logger.info(f"Starting catpure of {screenshot_file_path}")
+    gi = GameInfo()
+
+    game_area_image_array = get_game_area_as_2d_array(screenshot_file_path)
+
+    if number_reader is not None:
+
+        bets = number_reader.get_bets(game_area_image_array.copy())
+        gi.to_call = 0
+        gi.chips_remaining = number_reader.get_hero_chips_remaining(game_area_image_array.copy())
+
+        if len(bets) > 0 and gi.chips_remaining is not None:
+            gi.to_call = min(np.max(bets[1:]), gi.chips_remaining + bets[0]) - bets[0]
+
+        gi.pot_starting = number_reader.get_starting_pot(game_area_image_array.copy())
+
+        if gi.chips_remaining is not None:
+            gi.pot = gi.pot_starting + np.sum([min(gi.chips_remaining + bets[0], b) for b in bets])
+
+        logger.info(f"Starting Pot: {gi.pot_starting}\nTotal Pot: {gi.pot}\nTo Call: {gi.to_call}")
+
+    get_hole_cards(game_area_image_array=game_area_image_array,
+                   card_classifier=card_classifier,
+                   game_info=gi)
+
+    find_common_cards(screenshot_file_path=screenshot_file_path, card_classifier=card_classifier, gi=gi)
+
     # display_cv2_image_with_contours(bw, cnts)
     return gi
 
+
 event_exit = Event()
+
 
 def main():
     init_logger()
@@ -192,16 +202,14 @@ def main():
     now = datetime.now()
     formatted_time = now.strftime("%Y_%m_%d__%H_%M_%S_%f")
 
-    #file_path = os.path.join(cfg.UNIT_TEST_DATA_DIR, 'bet7.png')
+    # file_path = os.path.join(cfg.UNIT_TEST_DATA_DIR, 'bet7.png')
     file_path = None
 
-    #if file_path is None:
+    # if file_path is None:
     iterations = 60 * 60
-
 
     last_gi = None
     for i in range(0, iterations):
-
 
         file_path = os.path.join(cfg.SCREENSHOTS_PATH, 'screenshot_{}.png'.format(formatted_time))
         capture_screenshot("chrome", output_file_path=file_path)
@@ -209,7 +217,7 @@ def main():
         gi = extract_game_info_from_screenshot(file_path, card_classifier, number_reader)
 
         if gi.is_equal(last_gi):
-            #event_exit.wait(.5)
+            # event_exit.wait(.5)
             for i in range(0, 30):
                 time.sleep(0.1)
             continue
@@ -252,7 +260,7 @@ def main():
 
         last_gi = gi
 
-        for i in range(0,30):
+        for i in range(0, 30):
             time.sleep(0.1)
 
 
@@ -260,13 +268,14 @@ def quit(signo, _frame):
     print("Interrupted by %d, shutting down" % signo)
     event_exit.set()
 
+
 if __name__ == '__main__':
 
     import signal
 
-    #signal.signal(signal.CTRL_C_EVENT, quit)
-    #signal.signal(signal.CTRL_BREAK_EVENT, quit)
-    signal.signal(signal.SIGINT,quit)
+    # signal.signal(signal.CTRL_C_EVENT, quit)
+    # signal.signal(signal.CTRL_BREAK_EVENT, quit)
+    signal.signal(signal.SIGINT, quit)
     signal.signal(signal.SIGBREAK, quit)
 
     try:

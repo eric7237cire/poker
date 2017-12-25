@@ -33,3 +33,6 @@ Built/run in windows using:
 Tests are run on travis with a linux environment
 
 
+Some other potential leads:
+1. http://mahotas.readthedocs.io/en/latest/index.html
+

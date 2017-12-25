@@ -17,6 +17,7 @@ from dto import BoundingBox, Contour
 
 logger = logging.getLogger(__name__)
 
+
 def init_logger():
     root = logging.getLogger()
     root.setLevel(logging.DEBUG)
@@ -24,7 +25,7 @@ def init_logger():
     ch = logging.StreamHandler(sys.stdout)
     ch.setLevel(logging.DEBUG)
     ch.setLevel(logging.ERROR)
-    #formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    # formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
     formatter = logging.Formatter('%(name)s - %(message)s')
     ch.setFormatter(formatter)
@@ -37,18 +38,18 @@ def init_logger():
         logging.getLogger("number_reader").setLevel(logging.INFO)
 
 
-
-
 def timeit(method):
     def timed(*args, **kw):
         ts = time.time()
         result = method(*args, **kw)
         te = time.time()
 
-        logger.debug ('%r  %2.2f ms' % \
-                  (method.__name__, (te - ts) * 1000))
+        logger.debug('%r  %2.2f ms' % \
+                     (method.__name__, (te - ts) * 1000))
         return result
+
     return timed
+
 
 def diff_polygons(contour_1, contour_2, scale_polygons=True):
     """
@@ -75,7 +76,7 @@ def diff_polygons(contour_1, contour_2, scale_polygons=True):
     height2 = maxy2 - miny2
 
     if scale_polygons:
-        poly2 = scale( geom=poly2, xfact=width1 / width2, yfact= height1 / height2, origin='centroid')
+        poly2 = scale(geom=poly2, xfact=width1 / width2, yfact=height1 / height2, origin='centroid')
 
     poly1 = translate(poly1, xoff=-poly1.bounds[0], yoff=-poly1.bounds[1])
     poly2 = translate(poly2, xoff=-poly2.bounds[0], yoff=-poly2.bounds[1])
@@ -83,7 +84,6 @@ def diff_polygons(contour_1, contour_2, scale_polygons=True):
     intersecting_area = poly1.intersection(poly2).area
 
     return poly1.area + poly2.area - 2 * intersecting_area
-
 
 
 def display_image_with_contours(grey_array, contours):
@@ -200,17 +200,17 @@ def find_contours(
         height = c.bounding_box.max_y - c.bounding_box.min_y
 
         if width < min_width or width > max_width:
-            #logger.debug(f"Skipping contour #{idx}: {c} due to width")
+            # logger.debug(f"Skipping contour #{idx}: {c} due to width")
             continue
 
         if height < min_height or height > max_height:
-            #logger.debug(f"Skipping contour #{idx}: {c} due to height")
+            # logger.debug(f"Skipping contour #{idx}: {c} due to height")
             continue
 
         # print(f"Found contour @ {min_x},{min_y} Width={width} Height={height} Numpoints={len(contour)}")
 
         if display:
-            #display_image_with_contours(grey_array, [c.points_array ])
+            # display_image_with_contours(grey_array, [c.points_array ])
             pass
 
         if not c.polygon.is_valid:
@@ -218,7 +218,7 @@ def find_contours(
             continue
 
         # See if any additional contours fit 100% inside
-        for idx2 in range(idx+1, len(contour_list)):
+        for idx2 in range(idx + 1, len(contour_list)):
             c2 = contour_list[idx2]
 
             if c2 is None:
@@ -246,9 +246,6 @@ def generate_points_list(width, height):
     points = np.vstack((x, y)).T
 
     return points
-
-
-
 
 
 def extract_polygon_mask_from_contour(contour, width, height, all_grid_points_list):
@@ -283,9 +280,6 @@ def extract_image_with_mask(image, boolean_mask, background_color):
     r_image[np.logical_not(boolean_mask)] = background_color
 
     return r_image
-
-
-
 
 
 def clip_and_save(p_orig_image, x, y, w, h, file_name):

@@ -311,3 +311,25 @@ class TestGetCards(unittest.TestCase):
         self.assertEqual(0, gi.pot_starting)
         self.assertEqual(195500000, gi.chips_remaining)
         self.assertEqual(3500000, gi.pot)
+
+    def test_pot_1(self):
+        gi = self._get_gi(os.path.join(self.UNIT_TEST_DATA_DIR, 'pot_1.png'))
+
+        self.assertEqual(gi.common_cards[0], card_classifier.get_card_id('k', 'h'),
+                         msg=card_classifier.get_card_string(gi.common_cards[0]))
+        self.assertEqual(gi.common_cards[1], card_classifier.get_card_id('5', 'h'))
+        self.assertEqual(gi.common_cards[2], card_classifier.get_card_id('4', 'd'),
+                         msg=card_classifier.get_card_string(gi.common_cards[2]))
+        self.assertEqual(gi.common_cards[3], card_classifier.get_card_id('9', 'c'))
+
+        self.assertEqual(4, len(gi.common_cards))
+
+        self.assertEqual(gi.hole_cards[0], card_classifier.get_card_id('8', 's'),
+                         msg=card_classifier.get_card_string(gi.hole_cards[0]))
+        self.assertEqual(gi.hole_cards[1], card_classifier.get_card_id('j', 's'),
+                         msg=card_classifier.get_card_string(gi.hole_cards[1]))
+
+        self.assertEqual(0, gi.to_call)
+        self.assertEqual(2000000, gi.pot_starting)
+        self.assertEqual(196000000, gi.chips_remaining)
+        self.assertEqual(2000000, gi.pot)

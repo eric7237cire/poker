@@ -30,6 +30,18 @@ Built/run in windows using:
 1)  Anaconda (included the .h files needed for numpy and python extending)
 2)  Visual Studio Community 2017
 
+To setup:
+
+
+e:\anaconda3\scripts\conda create -n poker python=3.6
+activate poker
+conda install -c conda-forge opencv
+conda install pillow
+pip install imutils
+conda install shapely
+conda install matplotlib
+conda install scikit-image
+
 Tests are run on travis with a linux environment
 
 
